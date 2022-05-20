@@ -1,0 +1,63 @@
+---
+title: "Base Graphics Exercises"
+output: html_notebook
+editor_options: 
+  chunk_output_type: inline
+---
+
+# Load data
+
+Download `https://hbiostat.org/data/repo/titanic3.sav` and load it into R. Turn "survived" into a factor variable.
+
+```{r}
+```
+
+# Single variable
+
+If plotting a single variable, which plot would you select for the following variables?
+* pclass
+* survived
+* sex
+* age
+* fare
+* embarked
+
+Produce these six plots.
+
+```{r}
+```
+
+# ECDF
+
+Create a ECDF plot with "age". Call the `plot` function on the `ecdf` function of the variable of interest.
+
+Change the x-axis label and the main plot title.
+
+```{r}
+```
+
+# Relationship with "survived"
+
+Create a barplot showing the relationship between "sex" and "survived".
+
+```{r}
+```
+
+# Relationship between class and fare
+
+Create a boxplot showing the relationship between "pclass" and "fare". When `boxplot` uses two variables, it expects the variables to be provided in the formula syntax. This syntax looks like "Y ~ X" where "Y" is the continuous variable and "X" is the categorical variable.
+
+```{r}
+```
+
+# Continuous/continuous
+
+Create a scatterplot of "age" and "fare".
+
+```{r}
+```
+
+Add "sex" as a color.
+
+```{r}
+```

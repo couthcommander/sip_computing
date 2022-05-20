@@ -1,0 +1,208 @@
+---
+title: "Describing Data"
+output: html_notebook
+editor_options: 
+  chunk_output_type: inline
+---
+
+```{r, echo = FALSE, message = FALSE}
+library(ggplot2)
+library(Hmisc)
+```
+
+How do you summarize data? What do you look for when investigating data?
+
+# Types of Data
+
+## Statistics
+
+### quantity
+* discrete - count
+* continuous - measure
+
+### quality
+* binary - true/false
+* nominal - unordered
+* ordinal - ordered
+
+These are categorized into discrete variables ("factor" in R).
+
+## Programming
+
+* character - surround with quotes (' or ")
+* numeric
+* logical - TRUE or FALSE
+
+For simplicity, I'm ignoring "integer" and "complex".
+
+### unquantifiable
+* infinite - Inf
+* missing - NA
+* undefined - NULL
+* not a number - NaN (Inf - Inf)
+
+# Importing Data
+
+## Raw Data
+* delimited (comma, tab)
+
+## Binary Data
+* applications (Excel, statistical software, database)
+
+### Examples
+* scan
+* read.table
+* read.csv
+* readxl::read_excel
+* load
+
+# Exporting Data
+
+## Examples
+* write.csv
+* save
+
+```{r}
+# read a CSV file from URL
+bat <- read.csv('https://github.com/vubiostat/softball-stats/raw/csv/team_batting_stats_season.csv')
+# produce a random temporary filename
+tf <- tempfile()
+# write data set to temporary file; don't include row names
+write.csv(bat, file = tf, row.names = FALSE)
+# `read.csv` is more appropriate, but we can read in one line (\n) at a time with `scan`
+scan(tf, what = '', n = 6, sep = '\n')
+# show the first few rows of our data set (default is 6 rows)
+head(bat)
+```
+
+# Describing Data
+
+## Descriptive statistics
+
+The summary of discrete data usually includes mean, standard deviation, and quantiles. It may also include number of observations and number of observations missing. Continuous data is often summarized with a frequency table.
+
+## Table 1
+
+In a journal article the first table of data typically presents descriptive statistics of variables grouped by the exposure variable.
+
+### Examples
+
+For the next few examples, we'll download SAS data sets from the CDC's NHANES program. We'll take a look at participants' age and gender (demographics), as well as their standard biochemistry profile (drawn blood lab samples).
+
+SAS is a proprietary (not open source nor free) alternative to R.
+
+Here's a link to the description of the profile data: [biopro](https://wwwn.cdc.gov/Nchs/Nhanes/2017-2018/P_BIOPRO.htm)
+
+```{r}
+# use `haven` package and `read_xpt` function to read SAS file
+# restrict to three columns: userid (SEQN), gender (RIAGENDR), age (RIDAGEYR)
+# use `as.data.frame` to convert from `tibble` to `data.frame`
+demo <- as.data.frame(haven::read_xpt('https://wwwn.cdc.gov/Nchs/Nhanes/2017-2018/P_DEMO.XPT'))[, c('SEQN','RIAGENDR','RIDAGEYR')]
+# read profile data
+dat <- as.data.frame(haven::read_xpt('https://wwwn.cdc.gov/Nchs/Nhanes/2017-2018/P_BIOPRO.XPT'))
+# merge two data sets by common userid column (SEQN)
+profile <- merge(demo, dat)
+```
+
+```{r}
+# use `Hmisc` package and `label` function to provide full labels for variables in our data set
+# this is tedious unless the labels can be pulled from somewhere
+profile <- within(profile, {
+  label(SEQN)     <- 'Respondent Sequence Number'
+  label(RIAGENDR) <- 'Gender'
+  label(RIDAGEYR) <- 'Age in years at screening'
+  label(LBXSATSI) <- 'Alanine Aminotransferase (ALT) (IU/L)'
+  label(LBDSATLC) <- 'ALT Comment Code'
+  label(LBXSAL)   <- 'Albumin, refrigerated serum (g/dL)'
+  label(LBDSALSI) <- 'Albumin, refrigerated serum (g/L)'
+  label(LBXSAPSI) <- 'Alkaline Phosphatase (ALP) (IU/L)'
+  label(LBXSASSI) <- 'Aspartate Aminotransferase (AST) (IU/L)'
+  label(LBXSC3SI) <- 'Bicarbonate (mmol/L)'
+  label(LBXSBU)   <- 'Blood Urea Nitrogen (mg/dL)'
+  label(LBDSBUSI) <- 'Blood Urea Nitrogen (mmol/L)'
+  label(LBXSCLSI) <- 'Chloride (mmol/L)'
+  label(LBXSCK)   <- 'Creatine Phosphokinase (CPK) (IU/L)'
+  label(LBXSCR)   <- 'Creatinine, refrigerated serum (mg/dL)'
+  label(LBDSCRSI) <- 'Creatinine, refrigerated serum (umol/L)'
+  label(LBXSGB)   <- 'Globulin (g/dL)'
+  label(LBDSGBSI) <- 'Globulin (g/L)'
+  label(LBXSGL)   <- 'Glucose, refrigerated serum (mg/dL)'
+  label(LBDSGLSI) <- 'Glucose, refrigerated serum (mmol/L)'
+  label(LBXSGTSI) <- 'Gamma Glutamyl Transferase (GGT) (IU/L)'
+  label(LBDSGTLC) <- 'GGT Comment Code'
+  label(LBXSIR)   <- 'Iron, refrigerated serum (ug/dL)'
+  label(LBDSIRSI) <- 'Iron, refrigerated serum (umol/L)'
+  label(LBXSLDSI) <- 'Lactate Dehydrogenase (LDH) (IU/L)'
+  label(LBXSOSSI) <- 'Osmolality (mmol/Kg)'
+  label(LBXSPH)   <- 'Phosphorus (mg/dL)'
+  label(LBDSPHSI) <- 'Phosphorus (mmol/L)'
+  label(LBXSKSI)  <- 'Potassium (mmol/L)'
+  label(LBXSNASI) <- 'Sodium (mmol/L)'
+  label(LBXSTB)   <- 'Total Bilirubin (mg/dL)'
+  label(LBDSTBSI) <- 'Total Bilirubin (umol/L)'
+  label(LBDSTBLC) <- 'Total Bilirubin Comment Code'
+  label(LBXSCA)   <- 'Total Calcium (mg/dL)'
+  label(LBDSCASI) <- 'Total Calcium (mmol/L)'
+  label(LBXSCH)   <- 'Cholesterol, refrigerated serum (mg/dL)'
+  label(LBDSCHSI) <- 'Cholesterol, refrigerated serum (mmol/L)'
+  label(LBXSTP)   <- 'Total Protein (g/dL)'
+  label(LBDSTPSI) <- 'Total Protein (g/L)'
+  label(LBXSTR)   <- 'Triglycerides, refrig serum (mg/dL)'
+  label(LBDSTRSI) <- 'Triglycerides, refrig serum (mmol/L)'
+  label(LBXSUA)   <- 'Uric acid (mg/dL)'
+  label(LBDSUASI) <- 'Uric acid (umol/L)'
+})
+```
+
+We'll remove some of the redundant columns (something we would not typically do).
+
+```{r}
+# specify column names
+col2rm <- c(
+'LBDSATLC','LBDSALSI','LBDSBUSI','LBDSCRSI',
+'LBDSGBSI','LBDSGLSI','LBDSGTLC','LBDSIRSI',
+'LBDSPHSI','LBDSTBSI','LBDSTBLC','LBDSCASI',
+'LBDSCHSI','LBDSTPSI','LBDSTRSI','LBDSUASI'
+)
+# `setdiff` compares two vectors (A & B) and returns items in vector A not found in B
+# which in this case means find the columns not present in `col2rm`
+# with the end result being those columns (in `col2rm`) are removed from our data set
+profile <- profile[,setdiff(names(profile), col2rm)]
+```
+
+After adding labels and removing several columns, we're ready to take a closer look at our data. We'll use the `Hmisc` package to show descriptive statistics and provide table 1 output. There are many packages that could provide this functionality.
+
+```{r}
+# to format our output specifically for web-view, we can wrap it with `html`
+html(describe(profile))
+```
+
+```{r}
+# we use `setdiff` to remove SEQN and RIAGENDR from our vector
+# if the vector was c('A','B','C'), our paste would produce the string "A + B + C"
+cats <- paste(setdiff(names(profile), c('SEQN','RIAGENDR')), collapse = ' + ')
+# we now paste "~ RIAGENDR" to the end of our string
+# the "~" has a special meaning, where everything on the left are dependent variables
+# the variable on the right (RIAGENDR) is our exposure variable
+# we will use it to split (stratify) our participants by gender
+form <- sprintf('%s ~ RIAGENDR', cats)
+# `summaryM` produce our table 1
+m <- summaryM(as.formula(form), data = profile)
+# m <- summaryM(as.formula(form), data = profile, overall = TRUE)
+# tableone::CreateTableOne(vars = names(profile), strata = c('RIAGENDR'), data = profile)
+```
+
+```{r}
+# we use some additional arguments to customize our output
+# "prmsd" will print the mean and standard deviation
+# "prn" and "prN" are both related to including the number of non-missing observations
+html(m, round = 2, prmsd = TRUE, prn = FALSE, prN = TRUE)
+```
+
+# Visualizing Data
+
+There are many ways we can produce a plot to visually inspect our data. Here's one example, were we take a closer look at the bicarbonate variable. We'll use the `ggplot2` package to create a density plot.
+
+```{r}
+ggplot(data = profile, aes(x = LBXSC3SI)) + geom_density()
+```

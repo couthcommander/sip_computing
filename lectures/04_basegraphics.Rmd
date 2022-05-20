@@ -1,0 +1,134 @@
+---
+title: "Visualizing Data - base graphics"
+output: html_notebook
+editor_options: 
+  chunk_output_type: inline
+---
+
+In base graphics, you start with an empty canvas and add layers.
+
+## Major functions
+
+* plot
+
+## Main arguments to "plot" function
+
+* xlab - x-axis label
+* ylab - y-axis label
+* xlim - min and max values for x-axis
+* ylim - min and max values for y-axis
+* col - color
+* pch - point char
+* lty - line type
+* lwd - line width
+
+## Components (layers) of a plot in base graphics
+
+* points
+* lines
+* abline
+* segments
+* rect
+* arrows
+* axis
+* text
+* mtext (margin text)
+* legend
+
+### Notes about the axis
+
+While a plot has two axes (x and y), the plotting location for a given axis is referenced by a specific order and number in base graphics.
+
+* axis 1, bottom
+* axis 2, left
+* axis 3, top
+* axis 4, right
+
+While you could use all four axis locations, generally you would only use 1 and 2.
+
+## A few specific plot functions
+
+* hist
+* boxplot
+* barplot
+
+## Additional functions
+
+* par - graphical parameters
+
+### Examples
+
+We'll revisit the low birth weight data. Let's create a scatterplot of gestational "age" by "birth weight".
+
+```{r}
+plot(vlbw[,'gest'], vlbw[,'bwt'])
+```
+
+Let's also include "sex" by changing the color and point character. We'll try to mimic the output we would get from ggplot.
+
+```{r}
+vlbw <- read.csv('https://github.com/couthcommander/Bios6301/raw/main/datasets/vlbw.csv', row.names = 1)
+vlbw[,'race'] <- as.factor(vlbw[,'race'])
+op <- par(mar = c(5,4,1,1) + 0.1)
+plot(vlbw[,'gest'], vlbw[,'bwt'], xlab='', ylab='', axes=FALSE, type='n')
+rect(20, 350, 40.75, 1625.5, col = '#E1E1E1')
+points(vlbw[,'gest'], vlbw[,'bwt'],
+    col = ifelse(vlbw[,'sex']=='male', "#00BFC4", "#F8766D"),
+    pch = ifelse(vlbw[,'sex']=='male', 17, 16)
+)
+axis(1)
+axis(2, at = c(400, 800, 1200, 1600))
+mtext("Gestational Age", side=1, line=3)
+mtext("Birth Weight", side=2, line=3)
+lab <- c('Male','Female')
+legend("bottomright", lab, pch = c(17,16), col= c('#00BFC4','#F8766D'))
+box()
+grid(9, 8, col = 'white')
+par(op)
+```
+
+We can create a barplot by passing a variable into the `table` function first.
+
+```{r}
+barplot(table(vlbw[,'race']))
+```
+
+We can even take the `table` of two variables as the input for `barplot`.
+
+```{r}
+barplot(table(vlbw[,'sex'], vlbw[,'race']), beside = TRUE, legend.text = TRUE)
+```
+
+### Data and distributions
+
+Let's examine a few built-in distributions in R that we can use to generate data. In these cases we'll want to see a histograph and boxplot.
+
+I'll use the `layout` function to include several plots in the same output.
+
+```{r}
+n <- 10000
+data_norm <- rnorm(n, mean = 0, sd = 1)
+data_unif <- runif(n, min = 0, max = 1)
+data_pois <- rpois(n, 4)
+
+layout(matrix(1:6, 3, 2))
+hist(data_norm)
+boxplot(data_norm)
+
+hist(data_unif)
+boxplot(data_unif)
+
+hist(data_pois)
+boxplot(data_pois)
+```
+
+```{r}
+hist(data_norm)
+abline(v = -2, lty = 2, col = 'red')
+abline(v = 2, lty = 2, col = 'red')
+segments(-2, 1600, 2, 1600)
+segments(-2, 1550, -2, 1650)
+segments(2, 1550, 2, 1650)
+text(3, 1600, '95% of data\nbetween\n-1.96 and 1.96')
+quantile(data_norm, c(0.025, 0.975))
+```

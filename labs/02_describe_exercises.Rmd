@@ -1,0 +1,59 @@
+---
+title: "Describing Data Exercises"
+output: html_notebook
+editor_options: 
+  chunk_output_type: inline
+---
+
+```{r, echo = FALSE, message = FALSE}
+library(Hmisc)
+```
+
+# Load data
+
+Download `https://hbiostat.org/data/repo/titanic3.sav` and load it into R. This file is in a binary format that R can understand. Find a function that can load a file with a saved R object.
+
+```{r}
+```
+
+  * Did it load?
+  * What are the data types? Try `str(<data>)` where "<data>" is the variable name of the data set.
+
+```{r}
+```
+
+# Set factor variables
+
+Modify the "survived" column, by changing it into a factor variable. It should have two levels, "no" and "yes".
+
+```{r}
+```
+
+# Describe the data
+
+Use a function to describe this data set.
+
+```{r}
+```
+
+  * What stands out?
+
+# Create a table one
+
+What would make a good exposure variable? What other variables should you include?
+
+```{r}
+```
+
+  * What stands out?
+
+# Visually inspect the data
+
+A density plot might be a good choice for a continuous variable. Do we have any?
+
+Can you think of another type of plot that might be interesting to see (if we knew how to create it)?
+
+```{r}
+```
+
+  * What stands out?

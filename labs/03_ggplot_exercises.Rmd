@@ -1,0 +1,89 @@
+---
+title: "Visualizing Data Exercises"
+output: html_notebook
+editor_options: 
+  chunk_output_type: inline
+---
+
+```{r, echo = FALSE, message = FALSE}
+library(ggplot2)
+```
+
+# Load data
+
+Download `https://hbiostat.org/data/repo/titanic3.sav` and load it into R. Turn "survived" into a factor variable.
+
+```{r}
+```
+
+# Single variable
+
+If plotting a single variable, which plot/geom would you select for the following variables?
+* pclass
+* survived
+* sex
+* age
+* fare
+* embarked
+
+Produce these six plots using `ggplot` (not `qplot`).
+
+```{r}
+```
+
+# ECDF
+
+Create a ECDF plot with "age".
+
+```{r}
+```
+
+About 3/4(ths) of people were at or under what age?
+
+# Relationship with "survived"
+
+Repeat the plots by faceting over "survived" (don't show the plot for "survived").
+
+```{r}
+```
+
+# Relationship between class and fare
+
+Create a plot showing the relationship between "pclass" and "fare".
+
+```{r}
+```
+
+# Continuous data with "survived"
+
+Using "survived" as the x-axis, produce plots for each of the continuous variables.
+
+```{r}
+```
+
+# Continuous/continuous
+
+Now produce a plot with the two continuous variables.
+
+```{r}
+```
+
+Add one of the discrete variables as a color.
+
+```{r}
+```
+
+# Adding model output
+
+We'll create a simple model that predicts survival using sex, age, and fare. The new variable "xSurv" will be a probability between 0 and 1.
+
+```{r}
+tdat <- titanic3[complete.cases(titanic3[, c('survived','sex','age','fare')]),]
+m <- glm(survived ~ sex + age + fare, data = tdat, family = binomial)
+tdat[,'xSurv'] <- predict(m, type = 'response')
+```
+
+Create a plot showing the relationship between "age" and "xSurv". Also include the "survived" variable.
+
+```{r}
+```

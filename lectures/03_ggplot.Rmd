@@ -1,0 +1,193 @@
+---
+title: "Visualizing Data - ggplot2"
+output: html_notebook
+editor_options: 
+  chunk_output_type: inline
+---
+
+```{r, echo = FALSE, message = FALSE}
+library(ggplot2)
+```
+
+In ggplot, the values in a column of a data.frame will be the "ink" in the plot.
+
+Do we want to see raw data, a summary of data, or a combination of both?
+ * include raw data whenever possible (i.e., not millions of points)
+
+Who is the audience, and is the plot interpretable to them?
+
+Do we want to visualize a single variable, the relationship of two variables, or the relationship of more than two variables?
+
+X and Y-axis
+ * the x-axis is horizontal (east-west)
+ * the y-axis is vertical (north-south)
+ * if we want to show that one variable influences the other, we typically will put the variable of influence (independent variable) on the x-axis and the variable being influenced (dependent variable) on the y-axis
+
+## Components of ggplot
+
+[ggplot2 cheatsheet](https://raw.githubusercontent.com/rstudio/cheatsheets/main/data-visualization.pdf)
+
+* Geoms
+* Aesthetics
+* Stats
+* Scales
+* Faceting
+* Themes
+
+## Major functions
+
+* qplot - quick plot, more defaults
+* ggplot
+
+## Common Visualizations
+
+In ggplot, the type of plot references a "geom".
+
+geom | variable 1 | variable 2
+-----|------------|-----------
+density | continuous | NA
+histogram | continuous | NA
+bar | discrete | NA
+point | continuous | continuous
+boxplot | discrete | continuous
+dotplot | discrete | continuous
+violin | discrete | continuous
+
+### Data
+
+Data on 671 infants with very low (<1600 grams) birth weight from 1981-87 were collected at Duke University Medical Center.
+
+```{r}
+vlbw <- read.csv('https://github.com/couthcommander/Bios6301/raw/main/datasets/vlbw.csv', row.names = 1)
+head(vlbw)
+```
+
+### Examples
+
+For the given plots, are we showing the raw data or a summary of the data? If it's a summary, what type of summary is being shown?
+
+```{r}
+qplot(bwt, data=vlbw, geom='density')
+```
+
+```{r}
+qplot(bwt, data=vlbw, geom='histogram')
+```
+
+```{r}
+qplot(race, data=vlbw, geom='bar')
+```
+
+```{r}
+qplot(gest, bwt, data=vlbw, geom='point')
+```
+
+```{r}
+qplot(sex, bwt, data=vlbw, geom='boxplot')
+```
+
+```{r}
+qplot(sex, bwt, data=vlbw, geom='dotplot', binaxis = "y", binwidth = 10)
+```
+
+```{r}
+qplot(sex, bwt, data=vlbw, geom='violin')
+```
+
+We can also add lines, shapes, and text.
+
+### Overlapping with `jitter`
+
+We can provide overlapping geometeries. Order matters.
+
+```{r}
+qplot(sex, bwt, data=vlbw, geom=c('jitter','boxplot'))
+```
+
+```{r}
+qplot(sex, bwt, data=vlbw, geom=c('boxplot','jitter'))
+```
+
+### Aesthetics
+
+We can use aesthetics to map variables to "x" and "y" as well as color, size, and shape.
+
+```{r}
+qplot(gest, bwt, color=ivh, data=vlbw)
+```
+
+```{r}
+qplot(gest, bwt, color=sex, shape=sex, data=vlbw)
+```
+
+```{r}
+ggplot(data=vlbw) + geom_point(mapping = aes(x=gest, y=bwt, size=lol))
+```
+
+### Faceting
+
+If we want to compare plots by a categorical variable, we can use faceting.
+
+Faceting introduces the "~" (tilde) character. Think of it as having a left-hand side (LHS) and right-hand side (RHS).
+
+```{r}
+bestRows <- complete.cases(vlbw[,c('gest','bwt','sex')])
+p <- ggplot(data=vlbw[bestRows,]) + geom_point(mapping = aes(x=gest, y=bwt))
+p
+```
+
+A plot for each race.
+
+```{r}
+p + facet_wrap(~ race)
+```
+
+A plot for each race/sex combination.
+
+```{r}
+p + facet_wrap(~ race + sex)
+```
+
+A plot for each race/sex combination, organized into row (LHS, sex) and column (RHS, race).
+
+```{r}
+p + facet_grid(sex ~ race)
+```
+
+A plot for each race, organized into columns (RHS).
+
+```{r}
+p + facet_grid(. ~ race)
+```
+
+A plot for each race, organized into rows (LHS).
+
+```{r}
+p + facet_grid(race ~ .)
+```
+
+### Theme
+
+```{r}
+qplot(bwt, pltct, data=vlbw) + labs(title="Platelet count as function of birth weight") +
+      theme(axis.title.x = element_text(face = "bold", colour="red"),
+            axis.title.y = element_text(size = 20, angle = 0))
+```
+
+### More advanced examples
+
+```{r}
+ggplot(data=vlbw[bestRows,]) + geom_point(mapping = aes(x=gest, y=bwt)) + geom_smooth(mapping = aes(x=gest, y=bwt))
+```
+
+Rather than applying a "geom", we could apply a "stat" instead. One useful plot is the "ECDF".
+
+```{r}
+ggplot(vlbw, aes(gest)) + stat_ecdf()
+```
+
+Or even add both a "geom" and "stat".
+
+```{r}
+ggplot(vlbw, aes(apg1, bwt)) + geom_point() + stat_summary(fun.data = "mean_sdl", geom = "errorbar", color = "red")
+```

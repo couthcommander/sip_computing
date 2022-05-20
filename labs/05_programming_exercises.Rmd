@@ -1,0 +1,76 @@
+---
+title: "R Programming Exercises"
+output: html_notebook
+editor_options: 
+  chunk_output_type: inline
+---
+
+# Load data
+
+Download `https://hbiostat.org/data/repo/titanic3.sav` and load it into R. Turn "survived" into a factor variable.
+
+```{r}
+```
+
+Show the rows with the five youngest passengers.
+
+```{r}
+```
+
+  * How many 1st class passengers from Southampton survived?
+  * How many 2nd class passengers from Cherbourg had a missing "fare"?
+  * How many 3rd class passengers from Queenstown were women?
+
+```{r}
+```
+
+Use a "for" loop to find the mean "fare" for "embarked". Remove any missing values for "fare".
+
+```{r}
+```
+
+Use one of the apply functions to find the mean "fare" for "embarked". Remove any missing values for "fare".
+
+```{r}
+```
+
+Create a subset of adult men (age >= 18). Then restrict to rows where "sibsp" equals 1 and "ticket" is not missing.
+
+```{r}
+```
+
+Create a subset of adult women (age >= 18). Then restrict to rows where "sibsp" equals 1 and "ticket" is not missing.
+
+```{r}
+```
+
+Merge the men and women subsets by "ticket" and "cabin".
+
+```{r}
+```
+
+Create a new subset (of the merged data) requiring the string "Mrs" in the woman's name column. We will assume that this data set contains spouse pairs.
+
+```{r}
+```
+
+From the spouse pairs:
+
+  * How many times does both the husband and wife survive?
+  * Neither?
+  * Just the wife?
+  * Just the husband?
+
+```{r}
+```
+
+  * What is the average age difference?
+  * How about absolute difference?
+
+```{r}
+```
+
+Show the rows with the biggest age gap (both positive and negative).
+
+```{r}
+```
