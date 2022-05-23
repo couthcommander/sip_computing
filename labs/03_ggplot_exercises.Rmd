@@ -19,6 +19,7 @@ Download `https://hbiostat.org/data/repo/titanic3.sav` and load it into R. Turn 
 # Single variable
 
 If plotting a single variable, which plot/geom would you select for the following variables?
+
 * pclass
 * survived
 * sex

@@ -17,7 +17,7 @@ Download `https://hbiostat.org/data/repo/titanic3.sav` and load it into R. This 
 ```
 
   * Did it load?
-  * What are the data types? Try `str(<data>)` where "<data>" is the variable name of the data set.
+  * What are the data types? Try `str(<data>)` where "`<data>`" is the variable name of the data set.
 
 ```{r}
 ```
