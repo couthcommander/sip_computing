@@ -1,0 +1,496 @@
+---
+title: "Case Study"
+author: Cole Beck and Leena Choi
+date: '2022-05-24'
+output: html_document
+---
+
+# Introduction
+We use a case study to demonstrate a statistical analysis and the accompanying statistical report. This study was published (Yanis *et al.*$^{1}$) and we use a modified (simulated) version of dataset that was used in the original study. The paper can be found at: 
+https://onlinelibrary.wiley.com/doi/full/10.1111/tid.13772
+
+## Summary of background, methods, and design (copied/edited from the paper$^{1}$)
+Severe acute respiratory syndrome coronavirus 2 (SARS-CoV-2) infection is associated with increased morbidity and mortality in solid organ transplant (SOT) recipients. These individuals were identified as high-risk and prioritized for vaccination in public health guidelines.
+
+Humoral and cellular immune responses to two doses of the SARS-CoV-2 mRNA vaccine, BNT162b2, in 52 SOT recipients and 26 healthy controls (HCs) were evaluated. Blood specimens collected from participants prior to each dose and following the second dose were tested for SARS-CoV-2-specific antibodies as well as CD4+ and CD8+ T-cell responses. For this case study, we will use modified data collected at baseline (0–2 days before first vaccine dose), post-dose 1 (21–42 days after first vaccine dose), and post-dose 2 (21–42 days after second vaccine dose).
+
+## Outcome measures
+Immunoglobulin G (IgG) to SARS-CoV-2 spike receptor-binding domain (RBD) and spike extracellular domain (ECD) was evaluated by enzyme-linked immunosorbent assay (ELISA). Cellular immune responses were quantified using CD4 and CD8 assays.
+
+```{r setup, message = FALSE}
+library(Hmisc)
+library(ggplot2)
+library(gghalves)
+```
+
+```{r helperFunctions, echo = FALSE}
+# functions
+## Important function - confidence interval for means (or geoemtric means)
+GMECI <- function(x, B = 5000, geo = FALSE, boot = TRUE) {
+  if (boot == TRUE)
+  {
+  if (geo == FALSE)
+  {
+    k <- length(x)
+    mx <- rep(0, B)
+    for (b in 1:B)
+    {
+      samp <- sample(1:k, size = k, replace = TRUE)
+      bx <- x[samp]
+      mbx <- mean(bx, na.rm = TRUE)
+      mx[b] <- mbx
+    }
+    return(c(EST = (mean(x, na.rm = TRUE)),
+             CILOW = (quantile(mx, 0.025, na.rm = TRUE)),
+             CIHI = (quantile(mx, 0.975, na.rm = TRUE))))
+  }
+  if (geo == TRUE)
+  {
+    k <- length(x)
+    mx <- rep(0, B)
+    for (b in 1:B)
+    {
+      samp <- sample(1:k, size = k, replace = TRUE)
+      bx <- x[samp]
+      mbx <- mean(log(bx), na.rm = TRUE)
+      mx[b] <- mbx
+    }
+    return(c(EST = exp(mean(log(x), na.rm = TRUE)),
+             CILOW = exp(quantile(mx, 0.025, na.rm = TRUE)),
+             CIHI = exp(quantile(mx, 0.975, na.rm = TRUE))))
+  }
+  }
+  if (boot == FALSE)
+  {
+    if (geo == FALSE)
+    {
+      k <- length(x)
+      mx <- mean(x, na.rm = TRUE)
+      sx <- sd(x, na.rm = TRUE)
+      return(c(EST = (mx),
+               CILOW = (mx - qnorm(0.975) * sx/sqrt(k)),
+               CIHI = (mx + qnorm(0.975) * sx/sqrt(k))))
+    }
+    if (geo == TRUE)
+    {
+      k <- length(x)
+      mx <- mean(log(x), na.rm = TRUE)
+      sx <- sd(log(x), na.rm = TRUE)
+      return(c(EST = exp(mx),
+               CILOW = exp(mx - qnorm(0.975) * sx/sqrt(k)),
+               CIHI = exp(mx + qnorm(0.975) * sx/sqrt(k))))
+    }
+  }
+}
+
+## Important function - plot confidence interval
+pCI <- function(x, PCI, w = 0.035, lwd = 1.9, col = "deepskyblue3", pch = 20)
+{
+  points(x, PCI[1], pch = pch, col = col, cex = 0.8)
+  segments(x, PCI[2], x, PCI[3], lwd = lwd, col = col)
+  segments(x - w, PCI[2], x + w, PCI[2], lwd = lwd, col = col)
+  segments(x - w, PCI[3], x + w, PCI[3], lwd = lwd, col = col)
+}
+```
+
+```{r dataManip}
+dat <- read.csv('sot-covid.csv')
+# add labels to each variable: e.g., "mopost" variable
+label(dat$mopost) <- 'months post-transplant'
+label(dat$immuno) <- '# of immunosuppressants in patient’s treatment regiment'
+label(dat$subj) <- 'participant identification number'
+label(dat$organ) <- 'organ type (0 = healthy control, 1 = kidney, 2 = liver, 3 = heart, 4 = lung)'
+label(dat$age) <- 'age (years)'
+label(dat$male) <- 'gender (0 = female, 1 = male)'
+label(dat$rbd1) <- 'ELISA response to RBD at baseline'
+label(dat$rbd2) <- 'ELISA response to RBD three weeks following first vaccine dose'
+label(dat$rbd3) <- 'ELISA response to RBD three weeks following second vaccine dose'
+label(dat$ecd1) <- 'ELISA response to ECD at baseline'
+label(dat$ecd2) <- 'ELISA response to ECD three weeks following first vaccine dose'
+label(dat$ecd3) <- 'ELISA response to ECD three weeks following second vaccine dose'
+
+# Remove subjects
+dat <- dat[!(dat[,'subj'] %in% c(77,78)),]
+
+# sot_hc = 1 for SOT, 0 for healthy
+dat[,'sot_hc'] <- as.numeric(dat[,'organ'] != 0)
+healthy_control <- dat[,'sot_hc'] == 0
+dat[,'sot_hc'] <- factor(dat[,'sot_hc'], labels = c('Controls','SOT'))
+label(dat$sot_hc) <- 'patient group: Controls vs. SOT (solid organ transplant))'
+
+# Sort by subject ID
+dat <- dat[order(dat[,'subj']),]
+
+# Generate data for CD4 and CD8 counts
+set.seed(3)
+ndat <- nrow(dat)
+nctrl <- sum(healthy_control)
+dat[,'cd4ecd1'] <- rlnorm(ndat, meanlog=0.1, sdlog = 0.3)
+dat[healthy_control, 'cd4ecd1'] <- rlnorm(nctrl, meanlog=0, sdlog = 0.3)
+dat[,'cd4ecd3'] <- rlnorm(ndat,  meanlog=0, sdlog = 0.3)
+dat[healthy_control, 'cd4ecd3'] <- rlnorm(nctrl, meanlog=0.3, sdlog = 0.3)
+dat[,'cd8pep1'] <- rlnorm(ndat, meanlog=0, sdlog = 0.1)
+dat[healthy_control, 'cd8pep1'] <- rlnorm(nctrl, meanlog=0, sdlog = 0.1)
+dat[,'cd8pep3'] <- rlnorm(ndat, meanlog=0.07, sdlog = 0.1)
+dat[healthy_control, 'cd8pep3'] <- rlnorm(nctrl, meanlog=0.2, sdlog = 0.1)
+
+# create categorical variables with labels
+dat[,'organ'] <- factor(dat[,'organ'], labels = c('healthy','kidney','liver','heart','lung'))
+dat[,'sex'] <- factor(dat[,'male'], labels = c('F','M'))
+
+# for healthy, instead of 0, set to missing
+dat[healthy_control,'immuno'] <- NA
+dat[healthy_control,'mopost'] <- NA
+```
+
+# Exploratory Analysis
+
+## Descriptive statistics
+
+```{r, eval=T, echo = FALSE}
+demo <- dat[,c("subj", "organ", "immuno", "mopost", "age", "sex", "sot_hc")]
+outcomes <- dat[,grep('^(rbd|ecd)', names(dat))]
+```
+
+```{r desc}
+html(describe(demo))
+html(describe(outcomes))
+```
+
+## Baseline demographic and clinical characteristics of healthy control (Controls) and solid organ transplant (SOT) groups
+
+```{r tab1}
+html(summaryM(age + sex + immuno + organ + mopost ~ sot_hc, data = dat, continuous = 3), long = TRUE)
+```
+
+## Humoral responses
+
+```{r figure1, echo = FALSE, fig.width = 9.5}
+par(mfrow = c(1,2))
+
+#### RBD
+set.seed(4)
+
+plot(0, col = "white", frame.plot = FALSE, xlim = c(0, 1.3), xlab = "",
+     ylab = "Anti-RBD IgG (EU)", ylim = c(-1, 3), xaxt = 'n', main = "ELISA: RBD")
+axis(1, at = c(0.2, 0.65, 1.1), c("Baseline", "Post-Dose 1", "Post-Dose 2"))
+
+n_hc <- sum(healthy_control == 1)
+n_sot <- sum(healthy_control == 0)
+points(runif(n_hc, -0.015, 0.015) + 0.15, dat[healthy_control,'rbd1'], cex = 1.1, pch = 20, col = "deepskyblue2")
+points(runif(n_sot, -0.015, 0.015) + 0.25, dat[!healthy_control,'rbd1'], cex = 1.1, pch = 18, col = "red1")
+
+pCI(0.15, GMECI(dat[healthy_control,'rbd1']), col = "royalblue4", lwd = 2.1)
+pCI(0.25, GMECI(dat[!healthy_control,'rbd1']), pch = 18, col = "darkred", lwd = 2.1)
+
+points(runif(n_hc, -0.015, 0.015) + 0.6, dat[healthy_control,'rbd2'], cex = 1.1, pch = 20, col = "deepskyblue2")
+points(runif(n_sot, -0.015, 0.015) + 0.7, dat[!healthy_control,'rbd2'], cex = 1.1, pch = 18, col = "red1")
+
+pCI(0.6, GMECI(dat[healthy_control,'rbd2']), col = "royalblue4", lwd = 2.1)
+pCI(0.7, GMECI(dat[!healthy_control,'rbd2']), col = "darkred", pch = 18, lwd = 2.1)
+
+points(runif(n_hc, -0.015, 0.015) + 1.05, dat[healthy_control,'rbd3'], cex = 1.1, pch = 20, col = "deepskyblue2")
+points(runif(n_sot, -0.015, 0.015) + 1.15, dat[!healthy_control,'rbd3'], cex = 1.1, pch = 18, col = "red1")
+
+pCI(1.05, GMECI(dat[healthy_control,'rbd3']), col = "royalblue4", lwd = 2.1)
+pCI(1.15, GMECI(dat[!healthy_control,'rbd3']), col = "darkred", pch = 18, lwd = 2.1)
+
+segments(0.05, 0, 1.25, 0, col = "gray30", lwd = 1, lty = 3)
+legend(0, 3, col = c("deepskyblue2", "red1"), c("HC", "SOT"), pch = c(20, 18), cex = 1.1)
+
+mtext(expression(bold("(A)")), side = 1, cex = 1.2, line = 4)
+
+#### ECD
+set.seed(4)
+
+plot(0, col = "white", frame.plot = FALSE, xlim = c(0, 1.3), xlab = "",
+     ylab = "Anti-RBD IgG (EU)", ylim = c(-1, 3), xaxt = 'n', main = "ELISA: ECD")
+axis(1, at = c(0.2, 0.65, 1.1), c("Baseline", "Post-Dose 1", "Post-Dose 2"))
+
+points(runif(n_hc, -0.015, 0.015) + 0.15, dat[healthy_control,'ecd1'], cex = 1.1, pch = 20, col = "deepskyblue2")
+points(runif(n_sot, -0.015, 0.015) + 0.25, dat[!healthy_control,'ecd1'], cex = 1.1, pch = 18, col = "red1")
+
+pCI(0.15, GMECI(dat[healthy_control,'ecd1']), col = "royalblue4", lwd = 2.1)
+pCI(0.25, GMECI(dat[!healthy_control,'ecd1']), pch = 18, col = "darkred", lwd = 2.1)
+
+points(runif(n_hc, -0.015, 0.015) + 0.6, dat[healthy_control,'ecd2'], cex = 1.1, pch = 20, col = "deepskyblue2")
+points(runif(n_sot, -0.015, 0.015) + 0.7, dat[!healthy_control,'ecd2'], cex = 1.1, pch = 18, col = "red1")
+
+pCI(0.6, GMECI(dat[healthy_control,'ecd2']), col = "royalblue4", lwd = 2.1)
+pCI(0.7, GMECI(dat[!healthy_control,'ecd2']), col = "darkred", pch = 18, lwd = 2.1)
+
+points(runif(n_hc, -0.015, 0.015) + 1.05, dat[healthy_control,'ecd3'], cex = 1.1, pch = 20, col = "deepskyblue2")
+points(runif(n_sot, -0.015, 0.015) + 1.15, dat[!healthy_control,'ecd3'], cex = 1.1, pch = 18, col = "red1")
+
+pCI(1.05, GMECI(dat[healthy_control,'ecd3']), col = "royalblue4", lwd = 2.1)
+pCI(1.15, GMECI(dat[!healthy_control,'ecd3']), col = "darkred", pch = 18, lwd = 2.1)
+
+segments(0.05, 0, 1.25, 0, col = "gray30", lwd = 1, lty = 3)
+legend(0, 3, col = c("deepskyblue2", "red1"), c("HC", "SOT"), pch = c(20, 18), cex = 1.1)
+
+mtext(expression(bold("(B)")), side = 1, cex = 1.2, line = 4)
+```
+
+## Cellular responses and relationship with humoral responses
+
+```{r figure2, echo = FALSE, fig.width = 9.5}
+par(mfrow = c(1,2))
+
+diff_cd4ecd <- dat[, 'cd4ecd3'] - dat[, 'cd4ecd1']
+diff_ecd <- dat[, 'ecd3'] - dat[, 'ecd1']
+x_lim <- sign(range(diff_cd4ecd)) * ceiling(abs(range(diff_cd4ecd)) * 2) / 2
+y_lim <- sign(range(diff_ecd)) * ceiling(abs(range(diff_ecd)) * 2) / 2
+#x_lim <- c(-2, 1.5)
+p_x <- diff_cd4ecd[healthy_control]
+p_y <- diff_ecd[healthy_control]
+plot(p_x, p_y, col = 'deepskyblue2', pch = 20, frame.plot = FALSE,
+  xlab = expression(paste(Delta,"CD4+OX40+CD154+ (%)")),
+  ylab = expression(paste(Delta,"ELISA anti-ECD IgG (EU)")),
+  xlim = x_lim, ylim = y_lim, cex = 1.1,
+  main = 'Change in CD4/antibody response', xaxt = 'n', yaxt = 'n'
+)
+axis(1, at = seq(x_lim[1], x_lim[2], by = 0.5))
+axis(2, at = seq(y_lim[1], y_lim[2], by = 0.5))
+
+legend(x_lim[1], y_lim[2], pch = c(20,18), cex = 0.8, col = c("deepskyblue2", "red1"), c("HC", "SOT"))
+
+mtext(expression(bold("(A)")), side = 1, cex = 1.2, line = 4)
+
+abline(h = 0, lwd = 1.2, lty = 3, col = "gray50")
+abline(v = 0, lwd = 1.2, lty = 3, col = "gray50")
+
+points(mean(p_x, na.rm = TRUE), mean(p_y, na.rm = TRUE), col = "darkblue", pch = 20, cex = 1.4)
+
+p_x <- diff_cd4ecd[!healthy_control]
+p_y <- diff_ecd[!healthy_control]
+points(p_x, p_y, col = "red1", pch = 18)
+points(mean(p_x, na.rm = TRUE), mean(p_y, na.rm = TRUE), col = "darkred", pch = 18, cex = 1.4)
+
+diff_cd8pep <- dat[, 'cd8pep3'] - dat[, 'cd8pep1']
+y_lim <- sign(range(diff_cd8pep)) * ceiling(abs(range(diff_cd8pep)) * 2) / 2
+p_x <- diff_cd4ecd[healthy_control]
+p_y <- diff_cd8pep[healthy_control]
+plot(p_x, p_y, col = "deepskyblue2", pch = 20, frame.plot = FALSE,
+     xlab = expression(paste(Delta,"CD4+OX40+CD154+ (%)")),
+     ylab = expression(paste(Delta,"CD8+CD25+CD137+ (%)")),
+     xlim = x_lim, ylim = y_lim, cex = 1.1,
+     main = "Change in CD4/CD8 response", xaxt = 'n', yaxt = 'n'
+)
+axis(1, at = seq(x_lim[1], x_lim[2], by = 0.5))
+axis(2, at = seq(y_lim[1], y_lim[2], by = 0.5))
+
+legend(x_lim[1], y_lim[2], pch = c(20,18), cex = 0.8, col = c("deepskyblue2", "red1"), c("HC", "SOT"))
+
+mtext(expression(bold("(B)")), side = 1, cex = 1.2, line = 4)
+
+abline(h = 0, lwd = 1.2, lty = 3, col = "gray50")
+abline(v = 0, lwd = 1.2, lty = 3, col = "gray50")
+
+points(mean(p_x, na.rm = TRUE), mean(p_y, na.rm = TRUE), col = "darkblue", pch = 20, cex = 1.4)
+
+p_x <- diff_cd4ecd[!healthy_control]
+p_y <- diff_cd8pep[!healthy_control]
+points(p_x, p_y, col = "red1", pch = 18)
+points(mean(p_x, na.rm = TRUE), mean(p_y, na.rm = TRUE), col = "darkred", pch = 18, cex = 1.4)
+```
+
+```{r}
+vars <- grep('^(rbd|ecd)', names(dat), value = TRUE)
+# take log(e) of variables
+for(v in vars) {
+  dat[,paste0('l', v)] <- log(dat[,v])
+}
+# take difference in first dose and baseline values
+dat[,'rbd_diff12'] <- dat[,'rbd2'] - dat[,'rbd1']
+dat[,'ecd_diff12'] <- dat[,'ecd2'] - dat[,'ecd1']
+dat[,'lrbd_diff12'] <- dat[,'lrbd2'] - dat[,'lrbd1']
+dat[,'lecd_diff12'] <- dat[,'lecd2'] - dat[,'lecd1']
+```
+
+## Histogram of ELISA response
+
+### Original outcome measurements
+
+```{r hist, echo = FALSE, fig.height = 7, fig.width = 5}
+nf <- layout(matrix(1:6, nrow = 3))
+par(mar = c(5, 4, 4, 2) + 0.1)
+hist(dat[,'rbd1'], main = 'ELISA: RBD', xlab = 'Baseline')
+par(mar = c(5, 4, 2, 2) + 0.1)
+hist(dat[,'rbd2'], main = '', xlab = 'Post-Dose 1')
+par(mar = c(5, 4, 2, 2) + 0.1)
+hist(dat[,'rbd3'], main = '', xlab = 'Post-Dose 2')
+par(mar = c(5, 4, 4, 2) + 0.1)
+hist(dat[,'ecd1'], main = 'ELISA: ECD', xlab = 'Baseline')
+par(mar = c(5, 4, 2, 2) + 0.1)
+hist(dat[,'ecd2'], main = '', xlab = 'Post-Dose 1')
+par(mar = c(5, 4, 2, 2) + 0.1)
+hist(dat[,'ecd3'], main = '', xlab = 'Post-Dose 2')
+```
+
+### Logarithmic transformation of the outcome measurements
+
+```{r hist log, echo = FALSE, fig.height = 7, fig.width = 5}
+nf <- layout(matrix(1:6, nrow = 3))
+par(mar = c(5, 4, 4, 2) + 0.1)
+hist(dat[,'lrbd1'], main = 'ELISA: RBD', xlab = 'Baseline')
+par(mar = c(5, 4, 2, 2) + 0.1)
+hist(dat[,'lrbd2'], main = '', xlab = 'Post-Dose 1')
+par(mar = c(5, 4, 2, 2) + 0.1)
+hist(dat[,'lrbd3'], main = '', xlab = 'Post-Dose 2')
+par(mar = c(5, 4, 4, 2) + 0.1)
+hist(dat[,'lecd1'], main = 'ELISA: ECD', xlab = 'Baseline')
+par(mar = c(5, 4, 2, 2) + 0.1)
+hist(dat[,'lecd2'], main = '', xlab = 'Post-Dose 1')
+par(mar = c(5, 4, 2, 2) + 0.1)
+hist(dat[,'lecd3'], main = '', xlab = 'Post-Dose 2')
+```
+
+### Difference in outcomes between the baseline and the post-dose 1
+
+```{r histdiff, echo = FALSE, fig.height = 5, fig.width = 5}
+nf <- layout(matrix(1:4, nrow = 2))
+par(mar = c(5, 4, 2, 2) + 0.1)
+hist(dat[,'rbd_diff12'], main = '', xlab = 'Difference in RBD')
+par(mar = c(5, 4, 2, 2) + 0.1)
+hist(dat[,'lrbd_diff12'], main = '', xlab = 'Difference in log RBD')
+par(mar = c(5, 4, 2, 2) + 0.1)
+hist(dat[,'ecd_diff12'], main = '', xlab = 'Difference in ECD')
+par(mar = c(5, 4, 2, 2) + 0.1)
+hist(dat[,'lecd_diff12'], main = '', xlab = 'Difference in log ECD')
+```
+
+## Individual line plots 
+
+```{r, echo = FALSE}
+# original outcome
+dat$rbd_base <- dat$rbd1
+dat$ecd_base <- dat$ecd1
+dat$lrbd_base <- dat$lrbd1
+dat$lecd_base <- dat$lecd1
+# columns of interest
+coi <- c('subj', 'sot_hc', 'age', 'male', 'immuno', 'mopost')
+
+rbd <- dat[, c(coi, grep('^rbd', names(dat), value = TRUE))]
+rbd.long <- reshape(rbd, varying = c('rbd1','rbd2', 'rbd3'), v.names='rbd', idvar='subj', direction='long')
+rbd.long12 <- rbd.long[rbd.long$time!=3,]
+# re-label time as visit (1='Basline', 2='Post-Dose 1')
+rbd.long12[,'visit'] <- c('Baseline', 'Post-Dose 1')[rbd.long12[,'time']]
+rbd.long12[,'time'] <- NULL
+ecd <- dat[, c(coi, grep('^ecd', names(dat), value = TRUE))]
+ecd.long <- reshape(ecd, varying = c('ecd1','ecd2', 'ecd3'), v.names='ecd', idvar='subj', direction='long')
+ecd.long12 <- ecd.long[ecd.long$time!=3,]
+ecd.long12[,'visit'] <- c('Baseline', 'Post-Dose 1')[ecd.long12[,'time']]
+ecd.long12[,'time'] <- NULL
+
+# log outcome
+lrbd <- dat[, c(coi, grep('^lrbd', names(dat), value = TRUE))]
+lrbd.long <- reshape(lrbd, varying = c('lrbd1','lrbd2', 'lrbd3'), v.names='lrbd', idvar='subj', direction='long')
+lrbd.long12 <- lrbd.long[lrbd.long$time!=3,]
+lrbd.long12[,'visit'] <- c('Baseline', 'Post-Dose 1')[lrbd.long12[,'time']]
+lrbd.long12[,'time'] <- NULL
+lecd <- dat[, c(coi, grep('^lecd', names(dat), value = TRUE))]
+lecd.long <- reshape(lecd, varying = c('lecd1','lecd2', 'lecd3'), v.names='lecd', idvar='subj', direction='long')
+lecd.long12 <- lecd.long[lecd.long$time!=3,]
+lecd.long12[,'visit'] <- c('Baseline', 'Post-Dose 1')[lecd.long12[,'time']]
+lecd.long12[,'time'] <- NULL
+```
+
+### RBD
+
+```{r, echo = FALSE, message = FALSE, fig.height = 4, fig.width = 8}
+ggplot(rbd.long12, aes(x = visit, y = rbd, group = subj)) +
+  ggtitle("RBD at Baseline and Post-Dose 1") +
+     geom_line(alpha = 0.125) +
+    geom_half_violin(data = rbd.long12[rbd.long12[,'visit'] == "Post-Dose 1",], aes(group = visit), fill= "steelblue", side="r", alpha = 0.25) +
+    geom_half_violin(data = rbd.long12[rbd.long12[,'visit'] == "Baseline",], aes(group = visit), fill= "steelblue", side="l", alpha = 0.25) +
+    geom_smooth(data = rbd.long12, method = "lm", aes(group = 1), se = FALSE, colour = "darkblue") +
+    scale_colour_manual(values = c("darkblue", "gold4")) +
+    facet_wrap(sot_hc ~., scales = "free") +
+    theme_classic() + labs(x = NULL, y = NULL)
+```
+
+### ECD
+
+```{r, echo = FALSE, message = FALSE, fig.height = 4, fig.width = 8}
+ggplot(ecd.long12, aes(x = visit, y = ecd, group = subj)) + 
+    ggtitle("ECD at Baseline and Post-Dose 1") + 
+     geom_line(alpha = 0.125) + 
+    geom_half_violin(data = ecd.long12[ecd.long12[,'visit'] == "Post-Dose 1",], aes(group = visit), fill= "steelblue", side="r", alpha = 0.25) +
+    geom_half_violin(data = ecd.long12[ecd.long12[,'visit'] == "Baseline",], aes(group = visit), fill= "steelblue", side="l", alpha = 0.25) +
+    geom_smooth(data = ecd.long12, method = "lm", aes(group = 1), se = FALSE, colour = "darkblue") + 
+    scale_colour_manual(values = c("darkblue", "gold4")) +
+    facet_wrap(sot_hc ~., scales = "free") +
+    theme_classic() + labs(x = NULL, y = NULL)
+```
+
+# Statistical Analysis
+
+## Paired t-test
+* To test the difference in the outcomes between the baseline and post-dose 1 for each patient group
+
+### Control group
+
+#### RBD
+
+```{r}
+t.test(dat$lrbd1[dat$sot_hc=="Controls"], dat$lrbd2[dat$sot_hc=="Controls"], paired = TRUE)
+```
+
+#### ECD
+
+```{r}
+t.test(dat$lecd1[dat$sot_hc=="Controls"], dat$lecd2[dat$sot_hc=="Controls"], paired = TRUE)
+```
+
+### Solid organ transplant group
+
+#### RBD
+
+```{r}
+t.test(dat$lrbd1[dat$sot_hc=="SOT"], dat$lrbd2[dat$sot_hc=="SOT"], paired = TRUE)
+```
+
+#### ECD
+
+```{r}
+t.test(dat$lecd1[dat$sot_hc=="SOT"], dat$lecd2[dat$sot_hc=="SOT"], paired = TRUE)
+```
+
+## Two sample t-test
+* To test the difference in the outcomes between controls vs. solid organ transplant groups
+
+#### RBD
+
+```{r}
+t.test(lrbd_diff12 ~ sot_hc, data = dat)
+```
+
+#### ECD
+
+```{r}
+t.test(lecd_diff12 ~ sot_hc, data = dat)
+```
+
+## Multiple linear regression
+* To test the difference in the outcomes between controls vs. solid organ transplant groups after adjusting for the baseline measurement and covariates
+
+#### RBD
+
+```{r}
+fit1 <- lm(lrbd ~ sot_hc + lrbd_base + age + male, data = lrbd.long12)
+summary(fit1)
+```
+
+#### ECD
+
+```{r}
+fit2 <- lm(lecd ~ sot_hc + lecd_base + age + male, data = lecd.long12)
+summary(fit2)
+```
+
+# Model Diagnostics
+
+* Model diagnostics will be learned in other lectures.
+
+# References
+1. Yanis A, Haddadin Z, Spieker AJ, Waqfi D, Rankin DA, Talj R, Thomas L, Birdwell KA, Ezzell L, Blair M, Eason J, Varjabedian R, Warren CM, Nochowicz CH, Olson EC, Simmons JD, Yoder S, Guy M, Thomsen I, Chappell JD, Kalams SA, Halasa NB. Humoral and cellular immune responses to the SARS-CoV-2 BNT162b2 vaccine among a cohort of solid organ transplant recipients and healthy controls. Transpl Infect Dis. 2022 Feb;24(1):e13772. doi: 10.1111/tid.13772. Epub 2021 Dec 21.
