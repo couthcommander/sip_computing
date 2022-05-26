@@ -61,13 +61,13 @@ While you could use all four axis locations, generally you would only use 1 and 
 We'll revisit the low birth weight data. Let's create a scatterplot of gestational "age" by "birth weight".
 
 ```{r}
+vlbw <- read.csv('https://github.com/couthcommander/Bios6301/raw/main/datasets/vlbw.csv', row.names = 1)
 plot(vlbw[,'gest'], vlbw[,'bwt'])
 ```
 
 Let's also include "sex" by changing the color and point character. We'll try to mimic the output we would get from ggplot.
 
 ```{r}
-vlbw <- read.csv('https://github.com/couthcommander/Bios6301/raw/main/datasets/vlbw.csv', row.names = 1)
 vlbw[,'race'] <- as.factor(vlbw[,'race'])
 op <- par(mar = c(5,4,1,1) + 0.1)
 plot(vlbw[,'gest'], vlbw[,'bwt'], xlab='', ylab='', axes=FALSE, type='n')
