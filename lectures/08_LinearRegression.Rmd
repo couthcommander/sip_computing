@@ -1,0 +1,218 @@
+---
+title: "Linear regression"
+output:
+  html_document:
+    theme: cerulean
+    toc: yes
+    toc_depth: 3
+    number_sections: false
+    toc_float: 
+       collapsed: true
+    #code_folding: hide
+---
+
+```{=html}
+<style>
+h2 {
+  background-color: #D4DAEC;
+}
+body{
+  font-size: 14pt;
+}
+</style>
+```
+
+## Introduction
+
+
+-   Motivation
+-   Data assumptions
+-   Perform the linear regression analysis
+-   Model evaluation
+
+
+
+## Prepare data
+
+**fev** data: Smoking tends to impair lung function. Data in children who smoke.
+
+**age**: subject age
+**smoke**: smoke smoking habits (1 = yes, 2 = no)
+
+```{r}
+
+dataForAnalysis=read.csv("./data/fev.csv",header=TRUE,row.names=1)
+dataForAnalysis$sex=ifelse(dataForAnalysis$sex==1,"male","female")
+dataForAnalysis$smoke=ifelse(dataForAnalysis$smoke==1,"yes","no")
+
+head(dataForAnalysis)
+
+```
+
+## Simple linear regression
+
+**Question**: Does age associated with fev (lung function )?
+
+### Data assumptions
+
+**Normality**: dependent variable follows a normal distribution
+
+
+```{r}
+
+hist(dataForAnalysis$age)
+hist(dataForAnalysis$fev)
+
+```
+
+**Linearity**: The relationship between the independent and dependent variable must be linear.
+
+```{r}
+
+plot(fev ~ age, data = dataForAnalysis)
+
+```
+
+### Perform the linear regression analysis
+
+fev=b0+b1*Age
+
+```{r}
+
+modelResult <- lm(fev ~ age, data = dataForAnalysis)
+
+summary(modelResult)
+
+
+```
+
+Model Interpretation:
+
+the *Coefficients* estimates of the beta coefficients, Intercept (b0)=0.431648 and age (b1)=0.222041
+
+the standard errors (SE), which defines the accuracy of beta coefficients. For a given beta coefficient, the SE reflects how the coefficient varies under repeated sampling. 
+
+the t-statistic and the associated p-value, which defines the statistical significance of the beta coefficients.
+
+
+the estimated regression equation can be written as follow: fev = 0.431648 + 0.222041*age
+
+the intercept (b0) It can be interpreted as the predicted fev value at age zero.
+
+the beta coefficient (slope) for age (b1) is 0.222041. It means with age increase in one year, the predicted fev value will increase 0.222041.
+
+
+The R-squared (R2) ranges from 0 to 1 and represents the proportion of information in the data that can be explained by the model. For a simple linear regression, R2 is the square of the Pearson correlation coefficient.
+
+The adjusted R-squared adjusts for the degrees of freedom.
+
+
+
+### Model evaluation
+
+```{r}
+
+confint(modelResult)
+
+```
+
+The standard error measures the variability/accuracy of the beta coefficients. It can be used to compute the confidence intervals of the coefficients. There is approximately a 95% chance that the interval [0.2072777, 0.2368043] will contain the true value of b1.
+
+
+```{r}
+plot(dataForAnalysis$age,dataForAnalysis$fev,main = "FEV Regression by Age")
+abline(modelResult,cex = 1.3,pch = 16,xlab = "FEV",ylab = "Age")
+
+
+```
+
+
+```{r}
+
+op=par(mfrow=c(2,2),mar=c(4,4,2,2))
+plot(modelResult)
+
+par(op)
+
+```
+
+
+### Predict new data
+
+```{r}
+
+newData <- data.frame(age = c(Subject1=3,Subject2=4))
+predict(modelResult,newData)
+
+
+```
+
+
+
+## Multiple linear regression
+
+
+Multiple linear regression is an extension of simple linear regression used to predict an outcome based on multiple predictors.
+
+**Question**: Does age, height, and sex associated with fev (lung function )?
+
+
+### Data visulization
+
+
+```{r}
+
+plot(dataForAnalysis[,c("fev","age","height")])
+
+boxplot(dataForAnalysis$fev~dataForAnalysis$sex)
+
+```
+
+
+
+### Perform the linear regression analysis
+
+```{r}
+
+modelResult <- lm(fev ~ age+height+sex, data = dataForAnalysis)
+
+summary(modelResult)
+confint(modelResult)
+
+```
+
+
+Model Interpretation:
+
+the estimated regression line equation can be written as follow: fev = -4.448560 + 0.061364* age+ 0.104560 * height+0.161112*Sex(Male)
+
+the beta coefficient for the variable age (b1) is 0.061364 It means with age increase in one year, the predicted fev value will increase 0.061364
+
+F-statistic gives the overall significance of the model. It assess whether at least one predictor variable has a non-zero coefficient.
+
+
+### Effects of variables
+
+```{r}
+
+library(effects)
+allEffects(modelResult)
+plot(allEffects(modelResult),axes=list(x=list(rug=FALSE)))
+
+
+```
+
+
+
+### Predict new data
+
+```{r}
+
+newData <- data.frame(age = c(Subject1=3,Subject2=4),height=c(57,67),sex=c("male","female"))
+predict(modelResult,newData)
+
+
+```
+
+
+

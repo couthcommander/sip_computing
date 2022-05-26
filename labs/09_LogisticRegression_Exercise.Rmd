@@ -1,0 +1,125 @@
+---
+title: "Logistic Regression"
+output:
+  html_document:
+    theme: cerulean
+    toc: yes
+    toc_depth: 3
+    number_sections: false
+    toc_float: 
+       collapsed: true
+    #code_folding: hide
+---
+
+```{=html}
+<style>
+h2 {
+  background-color: #D4DAEC;
+}
+body{
+  font-size: 14pt;
+}
+</style>
+```
+
+
+
+```{r setup,echo=FALSE}
+
+knitr::opts_chunk$set(echo = FALSE,eval=FALSE)
+
+
+```
+
+
+
+## Exercise
+
+-   Data overview
+-   Perform logistic regression analysis
+-   Model evaluation
+
+
+Goal: association between survival (survived==1) and age (age).
+
+
+```{r,message=FALSE,echo=TRUE}
+
+#Get Titanic data
+library(Hmisc)
+getHdata(titanic3)
+head(titanic3)
+
+dataForAnalysis=titanic3
+
+```
+
+**Question**: Is survival (survived==1) associated with age, sex and ticket fare (fare)?
+
+### Exercise 1: Data visulization for survival, age, sex and fare
+
+
+```{r}
+
+table(dataForAnalysis$survived,dataForAnalysis$sex)
+
+tapply(dataForAnalysis$age,dataForAnalysis$survived,summary)
+boxplot(dataForAnalysis$age~dataForAnalysis$survived)
+
+tapply(dataForAnalysis$fare,dataForAnalysis$survived,summary)
+boxplot(dataForAnalysis$fare~dataForAnalysis$survived)
+
+
+```
+
+
+### Exercise 2: Perform logistic regression analysis
+
+survived ~ age+fare+sex
+
+```{r}
+
+modelResult <- glm(survived ~ age+fare+sex, data = dataForAnalysis,family = "binomial")
+summary(modelResult)
+
+
+```
+
+### Exercise 3: Model interpretation, show coefficients, confidence interval, and p values 
+
+```{r}
+
+summary(modelResult)
+confint(modelResult)
+
+```
+
+
+### Exercise 4: Report Odds ratio for each variable
+
+
+```{r}
+
+#Odds ratio
+exp(modelResult$coefficients)
+
+
+```
+
+### Exercise 5: Show effect of each variable
+
+```{r}
+
+library(effects)
+allEffects(modelResult)
+plot(allEffects(modelResult))
+
+
+```
+
+
+
+
+
+
+

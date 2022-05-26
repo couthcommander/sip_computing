@@ -1,0 +1,95 @@
+---
+title: "Linear regression"
+output:
+  html_document:
+    theme: cerulean
+    toc: yes
+    toc_depth: 3
+    number_sections: false
+    toc_float: 
+       collapsed: true
+    #code_folding: hide
+---
+
+```{=html}
+<style>
+h2 {
+  background-color: #D4DAEC;
+}
+</style>
+```
+
+```{r setup,echo=FALSE}
+
+knitr::opts_chunk$set(echo = FALSE,eval=FALSE)
+
+
+```
+
+
+
+## Exercise
+
+-   Data assumptions: show data distribution and discuss about Normality and Linearity
+-   Perform the linear regression analysis
+-   Model evaluation: discuss model result
+
+
+## Data
+
+```{r,echo=TRUE}
+
+#load data
+dataForAnalysis=read.csv("./data/sot-covid.csv",header=TRUE,row.names=1)
+dataForAnalysis$organ=factor(dataForAnalysis$organ)
+
+head(dataForAnalysis)
+
+```
+
+**Question**: Is RBD at three weeks (rbd2) associated with basedline RBD (rbd1) and other factors including organ and age?
+
+### Exercise 1: Data visulization for  rbd2, rbd1, age, and organ
+
+```{r}
+
+plot(dataForAnalysis[,c("rbd2","rbd1","age")])
+
+boxplot(dataForAnalysis$rbd2~dataForAnalysis$organ)
+
+```
+
+
+### Exercise 2: Perform the linear regression analysis, rbd2~rbd1+age+organ
+
+```{r}
+
+modelResult <- lm(rbd2 ~ rbd1+age+organ, data = dataForAnalysis)
+
+```
+
+
+### Exercise 3: Model interpretation, show coefficients, confidence interval, and p values 
+
+```{r}
+
+summary(modelResult)
+confint(modelResult)
+
+```
+
+
+
+### Exercise 4: USe the model to predict the rbd2 value for a new subject.
+
+
+```{r,echo=TRUE,eval=TRUE}
+
+newData <- data.frame(age = c(Subject1=3,Subject2=4),rbd1=c(0.426,0.153),organ=c(1,2))
+
+
+```
+
+
+
+

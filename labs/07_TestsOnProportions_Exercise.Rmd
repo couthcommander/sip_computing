@@ -1,0 +1,135 @@
+---
+title: "Tests on proportions"
+output:
+  html_document:
+    theme: cerulean
+    toc: yes
+    toc_depth: 3
+    number_sections: false
+    toc_float: 
+       collapsed: true
+    #code_folding: hide
+---
+
+```{=html}
+<style>
+h2 {
+  background-color: #D4DAEC;
+}
+body{
+  font-size: 14pt;
+}
+</style>
+```
+
+
+
+```{r setup,echo=FALSE}
+
+knitr::opts_chunk$set(echo = FALSE,eval=FALSE)
+
+
+```
+
+
+
+## Exercise
+
+-   Compare Observed Proportion to an Expected Proportion: One-Proportion Z-Test
+-   Compare Two Observed Proportions: Two Proportions Z-Test
+-   Compare Multiple Observed Proportions to Expected Proportions: Chi-square test
+
+
+```{r,message=FALSE,echo=TRUE}
+
+#Get Titanic data
+library(Hmisc)
+getHdata(titanic3)
+head(titanic3)
+
+dataForAnalysis=titanic3
+
+```
+
+
+## Compare Observed Proportion to an Expected Proportion: One-Proportion Z-Test
+
+*Question:* What's the proportion of survivors in Titanic data, different than 0.4?  
+
+### Exercise 1: show count and proportion of survivors                          
+
+```{r}
+
+table(dataForAnalysis$survived)
+table(dataForAnalysis$survived)/sum(table(dataForAnalysis$survived))
+
+```
+
+
+### Exercise 2: Using Z test to compare the observed propotion with 0.4                        
+
+```{r}
+
+prop.test(x = length(which(dataForAnalysis$survived==1)), n = sum(table(dataForAnalysis$survived)), p = 0.4, correct = FALSE)
+
+```
+
+
+## Compare Two Observed Proportions: Two Proportions Z-Test
+
+*Question:* What's the proportion of survivors in male and female, are they different?
+
+### Exercise 1: show count and proportion of survivors in male and female                         
+
+```{r}
+
+table(dataForAnalysis$sex,dataForAnalysis$survived)
+table(dataForAnalysis$sex,dataForAnalysis$survived)/as.vector(table(dataForAnalysis$sex))
+
+```
+
+
+### Exercise 2: Using Z test to compare the two propotions
+
+```{r}
+
+nX=length(which(dataForAnalysis$sex=="male"))
+nY=length(which(dataForAnalysis$sex=="female"))
+
+nX1=length(which(dataForAnalysis$sex=="male" & dataForAnalysis$survived==1))
+nY1=length(which(dataForAnalysis$sex=="female" & dataForAnalysis$survived==1))
+
+prop.test(c(nX1,nY1),c(nX,nY), correct = FALSE)
+
+
+```
+
+
+## Compare Multiple Observed Proportions to Expected Proportions: Chi-square test
+
+*Question:* What's the proportion of survivors in people in different class (pclass), are they different?
+
+### Exercise 1: show count and proportion of survivors in different class                     
+
+```{r}
+
+table(dataForAnalysis$pclass,dataForAnalysis$survived)
+table(dataForAnalysis$pclass,dataForAnalysis$survived)/as.vector(table(dataForAnalysis$pclass))
+
+```
+
+### Exercise 2: Using Chi-square test to compare the three propotions
+
+```{r}
+
+chisq.test(table(dataForAnalysis$pclass,dataForAnalysis$survived))
+
+```
+
+
+
+
+
+
+
+

@@ -1,0 +1,182 @@
+---
+title: "Logistic Regression"
+output:
+  html_document:
+    theme: cerulean
+    toc: yes
+    toc_depth: 3
+    number_sections: false
+    toc_float: 
+       collapsed: true
+    #code_folding: hide
+---
+
+```{=html}
+<style>
+h2 {
+  background-color: #D4DAEC;
+}
+body{
+  font-size: 14pt;
+}
+</style>
+```
+
+
+## Introduction
+
+-   Motivation
+-   Data overview
+-   Perform logistic regression analysis
+-   Model evaluation
+
+
+## Prepare data
+
+**fev** data: Smoking tends to impair lung function. Data in children who smoke.
+
+**age**: subject age
+
+**smoke**: smoke smoking habits (1 = yes, 2 = no)
+
+```{r}
+
+dataForAnalysis=read.csv("./data/fev.csv",header=TRUE,row.names=1)
+dataForAnalysis$sex=ifelse(dataForAnalysis$sex==1,"male","female")
+dataForAnalysis$smoke=factor(ifelse(dataForAnalysis$smoke==1,"yes","no"))
+
+head(dataForAnalysis)
+
+```
+
+
+## Simple Logistic regression
+
+**Question**: Does smoking associated with age?
+
+
+### Logistic regression assumptions
+
+The outcome is a binary or dichotomous variable like yes vs no, positive vs negative, 1 vs 0.
+There is a linear relationship between the logit of the outcome and each predictor variables. logit(p) = log(p/(1-p)), where p is the probabilities of the outcome.
+There is no extreme values or outliers in the continuous predictors
+There is no high multicollinearity among the predictors.
+
+
+### Data visulization
+
+```{r}
+
+table(dataForAnalysis$smoke)
+hist(dataForAnalysis$age)
+
+boxplot(dataForAnalysis$age~dataForAnalysis$smoke)
+
+```
+
+
+### Perform logistic regression analysis
+
+logit(p Smoking)=log(p/(1-p))=b0+b1*Age
+
+```{r}
+
+modelResult <- glm(smoke ~ age, data = dataForAnalysis,family = "binomial")
+summary(modelResult)
+
+
+```
+
+
+Model Interpretation:
+
+the *Coefficients* estimates of the beta coefficients, Intercept (b0)=-7.74391 and age (b1)=0.48364
+
+the standard errors (SE), which defines the accuracy of beta coefficients. For a given beta coefficient, the SE reflects how the coefficient varies under repeated sampling. 
+
+the z value and the associated p-value, which defines the statistical significance of the beta coefficients.
+
+the estimated regression equation can be written as follow: log(p/(1-p)) = -7.74391 + 0.48364*age
+
+Alternatively, the equation can be written as p = exp(-7.74391 + 0.48364* age)/ [1 + exp(-7.74391 + 0.48364 *age)]. 
+
+As a result, we can predict the probability of being a smoker for each age.
+
+
+
+### Predict new data
+
+```{r}
+
+newData <- data.frame(age = c(NewCar1=6,NewCar2=7))
+predictionResult=predict.glm(modelResult,newData,type ="response") #probabilities
+predictionResult
+
+```
+
+
+
+### Odds ratio
+
+logit(p Smoking)=log(p/(1-p)) is also called as log-odd.
+
+The odds reflect the likelihood that the event will occur. It can be seen as the ratio of “successes” to “non-successes”.
+
+An odds ratio measures the association between a predictor variable (x) and the outcome variable (y). It represents the ratio of the odds that an event will occur (event = 1) given the presence of the predictor x (x = 1), compared to the odds of the event occurring in the absence of that predictor (x = 0).
+
+```{r}
+
+exp(modelResult$coefficients)
+exp(confint(modelResult))
+
+```
+
+
+## Multiple logistic regression
+
+
+**Question**: Does smoking associated with age, height, and sex?
+
+
+### Data visulization
+
+```{r}
+
+table(dataForAnalysis$sex,dataForAnalysis$smoke)
+plot(dataForAnalysis[,c("age","height")])
+
+boxplot(dataForAnalysis$height~dataForAnalysis$smoke)
+
+
+```
+
+
+### Perform logistic regression analysis
+
+```{r}
+
+modelResult <- glm(smoke ~ age+height+sex, data = dataForAnalysis,family = "binomial")
+summary(modelResult)
+
+```
+
+
+### Effects of variables
+
+
+```{r}
+
+library(effects)
+allEffects(modelResult)
+plot(allEffects(modelResult),axes=list(x=list(rug=FALSE)))
+
+
+```
+
+
+
+
+
+
+
+
