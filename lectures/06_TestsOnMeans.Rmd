@@ -30,20 +30,23 @@ body{
 Hypothesis tests and p-values
 
 -   Motivation
+    -   Population mean and sample mean
+    -   Understand the question
+    -   Explore the data
 
 -   Comparing **one-sample mean** to a standard known mean:
 
-    -   One-Sample T-test (parametric)
+    -   One-Sample t-test (parametric)
     -   One-Sample Wilcoxon Test (non-parametric)
 
 -   Comparing the **means of two independent groups**
 
-    -   Unpaired Two Samples T-test (parametric)
+    -   Unpaired Two Samples t-test (parametric)
     -   Unpaired Two-Samples Wilcoxon Test (non-parametric)
 
 -   Comparing the **means of paired samples**
 
-    -   Paired Samples T-test (parametric)
+    -   Paired Samples t-test (parametric)
     -   Paired Samples Wilcoxon Test (non-parametric)
 
 -   Comparing the **means of more than two groups**
@@ -68,7 +71,8 @@ out of your lungs.
 
 ```{r}
 
-dataForAnalysis=read.csv("./data/fev.csv",header=TRUE,row.names=1)
+#dataForAnalysis=read.csv("./data/fev.csv",header=TRUE,row.names=1)
+dataForAnalysis <- read.csv("https://raw.githubusercontent.com/couthcommander/sip_computing/main/labs/fev.csv",header=TRUE,row.names=1)
 
 head(dataForAnalysis)
 
@@ -86,10 +90,11 @@ distribution of the data and use parametric tests.
 ```{r}
 
 hist(dataForAnalysis$age)
+abline(v=10,lty=2,col="red")
 
 ```
 
-### One-Sample T-test (parametric)
+### One-Sample t-test (parametric)
 
 ```{r}
 #T stastic caculation
@@ -141,15 +146,15 @@ different?
 ```{r}
 
 hist(dataForAnalysis$fev[which(dataForAnalysis$smoke==1)])
-
 hist(dataForAnalysis$fev[which(dataForAnalysis$smoke==2)])
+boxplot(dataForAnalysis$fev~dataForAnalysis$smoke)
 
 tapply(dataForAnalysis$fev,dataForAnalysis$smoke,summary)
 
 
 ```
 
-### Two-Sample T-test (parametric)
+### Two-Sample t-test (parametric)
 
 T-statistic calculation
 
@@ -202,7 +207,7 @@ healthy controls (HCs).
 ```{r}
 
 #load data
-dataForAnalysis=read.csv("./data/sot-covid.csv",header=TRUE,row.names=1)
+dataForAnalysis=read.csv("https://raw.githubusercontent.com/couthcommander/sip_computing/main/labs/sot-covid.csv",header=TRUE,row.names=1)
 
 head(dataForAnalysis)
 
@@ -220,6 +225,10 @@ first vaccine dose
 
 summary(dataForAnalysis$rbd2-dataForAnalysis$rbd1)
 
+hist(dataForAnalysis$rbd2-dataForAnalysis$rbd1)
+
+plot(dataForAnalysis$rbd1,dataForAnalysis$rbd2)
+abline(0,1,lty=2,col="red")
 
 ```
 
@@ -284,6 +293,9 @@ liver, 3 = heart, 4 = lung).
 boxplot(rbd1   ~ organ, data = dataForAnalysis,main="baseline RBD")
 
 boxplot(rbd2   ~ organ, data = dataForAnalysis,main="RBD at three weeks")
+
+hist(dataForAnalysis$rbd1)
+hist(dataForAnalysis$rbd2)
 
 
 ```
