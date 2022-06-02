@@ -18,7 +18,7 @@ Show the rows with the five youngest passengers.
 ```
 
   * How many 1st class passengers from Southampton survived?
-  * How many 2nd class passengers from Cherbourg had a missing "fare"?
+  * How many 2nd class passengers from Cherbourg had a non-missing "fare"?
   * How many 3rd class passengers from Queenstown were women?
 
 ```{r}

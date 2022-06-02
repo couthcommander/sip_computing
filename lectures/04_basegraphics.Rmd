@@ -69,6 +69,7 @@ Let's also include "sex" by changing the color and point character. We'll try to
 
 ```{r}
 vlbw[,'race'] <- as.factor(vlbw[,'race'])
+# this is the default margin size
 op <- par(mar = c(5,4,1,1) + 0.1)
 plot(vlbw[,'gest'], vlbw[,'bwt'], xlab='', ylab='', axes=FALSE, type='n')
 rect(20, 350, 40.75, 1625.5, col = '#E1E1E1')
@@ -81,6 +82,7 @@ axis(2, at = c(400, 800, 1200, 1600))
 mtext("Gestational Age", side=1, line=3)
 mtext("Birth Weight", side=2, line=3)
 lab <- c('Male','Female')
+# #00BFC4 is hex(0-255) with RGB parts, red:00, blue:BF, green:C4
 legend("bottomright", lab, pch = c(17,16), col= c('#00BFC4','#F8766D'))
 box()
 grid(9, 8, col = 'white')
