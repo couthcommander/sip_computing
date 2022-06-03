@@ -24,28 +24,30 @@ body{
 
 ## Introduction
 
-
 -   Motivation
--   Data assumptions
--   Perform the linear regression analysis
--   Model evaluation
+-   Model assumptions
+-   Perform simple and multiple linear regression analysis
+-   Model diagnostics
 
 
+## Data example
+We will use the same data, **fev**, used in the lecture '06_TestsOnMeans'. This data have `fev` measuring lung function in children who are smokers or non-smokers. Smoking tends to impair lung function.
 
-## Prepare data
+* Important variables we use in this lecture:
 
-**fev** data: Smoking tends to impair lung function. Data in children who smoke.
+    - **sex**: subject gender (1 = male, 2 = female)
 
-**age**: subject age
-**smoke**: smoke smoking habits (1 = yes, 2 = no)
+    - **smoke**: smoke smoking habits (1 = yes, 2 = no)
+
 
 ```{r}
 
-dataForAnalysis=read.csv("./data/fev.csv",header=TRUE,row.names=1)
-dataForAnalysis$sex=ifelse(dataForAnalysis$sex==1,"male","female")
-dataForAnalysis$smoke=ifelse(dataForAnalysis$smoke==1,"yes","no")
+#fev=read.csv("./data/fev.csv",header=TRUE,row.names=1)
+fev <- read.csv("https://raw.githubusercontent.com/couthcommander/sip_computing/main/labs/fev.csv",header=TRUE,row.names=1)
+fev$sex=ifelse(fev$sex==1,"male","female")
+fev$smoke=ifelse(fev$smoke==1,"yes","no")
 
-head(dataForAnalysis)
+head(fev)
 
 ```
 
@@ -53,62 +55,56 @@ head(dataForAnalysis)
 
 **Question**: Does age associated with fev (lung function )?
 
-### Data assumptions
+### Checking assumptions
 
-**Normality**: dependent variable follows a normal distribution
+**Normality**: Does the dependent variable follows a normal distribution?
 
 
 ```{r}
 
-hist(dataForAnalysis$age)
-hist(dataForAnalysis$fev)
+hist(fev$age, main="", xlab="Age")
+hist(fev$fev, main="", xlab="FEV")
 
 ```
 
-**Linearity**: The relationship between the independent and dependent variable must be linear.
+**Linearity**: Does the relationship between the independent variable and the dependent variable is linear?
 
 ```{r}
 
-plot(fev ~ age, data = dataForAnalysis)
+plot(fev ~ age, data = fev, xlab="Age", ylab="FEV")
 
 ```
 
-### Perform the linear regression analysis
+### Perform a linear regression analysis
 
-fev=b0+b1*Age
+Regress `fev` on `age`: $fev \sim b_0 + b_1 age$
 
 ```{r}
 
-modelResult <- lm(fev ~ age, data = dataForAnalysis)
+modelResult <- lm(fev ~ age, data = fev)
 
 summary(modelResult)
 
 
 ```
 
-Model Interpretation:
+Interpretation of results:
 
-the *Coefficients* estimates of the beta coefficients, Intercept (b0)=0.431648 and age (b1)=0.222041
+- The *Coefficients* are estimates of model parameters: the intercept ($b_0$) is 0.431648 and age ($b_1$) is 0.222041. 
 
-the standard errors (SE), which defines the accuracy of beta coefficients. For a given beta coefficient, the SE reflects how the coefficient varies under repeated sampling. 
+    - The estimated regression equation can be written as fev = 0.431648 + 0.222041*age.
+    - The intercept ($b_0$) can be interpreted as the predicted fev value at age=0.
+    - The coefficient for age ($b_1$) is 0.222041; if age increases by one year, the predicted fev value increases by 0.222041.
 
-the t-statistic and the associated p-value, which defines the statistical significance of the beta coefficients.
+- The standard errors (SE) is the standard deviation of sampling distribution of the coefficients. The SE reflects how the coefficient would vary under repeated sampling.
 
+- The R-squared (R2) ranges from 0 to 1 and represents the proportion of variability in fev (dependent variable) explained by the model. For a simple linear regression, R2 is square of the Pearson's correlation coefficient.
 
-the estimated regression equation can be written as follow: fev = 0.431648 + 0.222041*age
+- The adjusted R-squared is a modified R-squared to adjust for the number of predictors in the model. It tries to correct for overestimation.
 
-the intercept (b0) It can be interpreted as the predicted fev value at age zero.
+### Model diagnostics
 
-the beta coefficient (slope) for age (b1) is 0.222041. It means with age increase in one year, the predicted fev value will increase 0.222041.
-
-
-The R-squared (R2) ranges from 0 to 1 and represents the proportion of information in the data that can be explained by the model. For a simple linear regression, R2 is the square of the Pearson correlation coefficient.
-
-The adjusted R-squared adjusts for the degrees of freedom.
-
-
-
-### Model evaluation
+#### Confidence interval of the estimates of model parameters
 
 ```{r}
 
@@ -116,23 +112,28 @@ confint(modelResult)
 
 ```
 
-The standard error measures the variability/accuracy of the beta coefficients. It can be used to compute the confidence intervals of the coefficients. There is approximately a 95% chance that the interval [0.2072777, 0.2368043] will contain the true value of b1.
+If the same study were to be repeated, there is a 95% chance that the interval [0.21, 0.24] contains the true value of $b_1$.
 
+#### Visulization of the fitted line
 
 ```{r}
-plot(dataForAnalysis$age,dataForAnalysis$fev,main = "FEV Regression by Age")
-abline(modelResult,cex = 1.3,pch = 16,xlab = "FEV",ylab = "Age")
 
-
+plot(fev$age, fev$fev, main = "", xlab="Age", ylab="FEV")
+#abline(modelResult, cex = 1.3, pch = 16, col=2)
+lines(fev$age, modelResult$fitted.values, lty=1, col=2)
+legend("topleft", "Fitted line", lty=1, col=2)
 ```
 
+#### Checking the residuals
 
 ```{r}
 
-op=par(mfrow=c(2,2),mar=c(4,4,2,2))
-plot(modelResult)
+par(mfrow=c(1, 2))
+plot(modelResult$fitted.values, modelResult$residuals, main="Residuals vs. Fitted", xlab="Fitted values", ylab="Residuals")
+abline(h=0, lty=2)
 
-par(op)
+qqnorm(scale(modelResult$residuals))
+abline(0,1,lty=2,col="red")
 
 ```
 
@@ -141,12 +142,11 @@ par(op)
 
 ```{r}
 
-newData <- data.frame(age = c(Subject1=3,Subject2=4))
-predict(modelResult,newData)
+newData <- data.frame(age = c(Subject1 = 5, Subject2 = 10))
+predict(modelResult, newData)
 
 
 ```
-
 
 
 ## Multiple linear regression
@@ -154,7 +154,7 @@ predict(modelResult,newData)
 
 Multiple linear regression is an extension of simple linear regression used to predict an outcome based on multiple predictors.
 
-**Question**: Does age, height, and sex associated with fev (lung function )?
+**Question**: Are age and smoking associated with fev (lung function)?
 
 
 ### Data visulization
@@ -162,19 +162,28 @@ Multiple linear regression is an extension of simple linear regression used to p
 
 ```{r}
 
-plot(dataForAnalysis[,c("fev","age","height")])
+boxplot(fev$fev~fev$smoke, main="", xlab="Smoke", ylab="FEV")
 
-boxplot(dataForAnalysis$fev~dataForAnalysis$sex)
+boxplot(fev$age~fev$smoke, main="", xlab="Smoke", ylab="Age")
 
 ```
 
-
-
-### Perform the linear regression analysis
+### Perform a linear regression analysis
+Regress `fev` on `smoke`: $fev \sim b_0 + b_2 smoke$
 
 ```{r}
 
-modelResult <- lm(fev ~ age+height+sex, data = dataForAnalysis)
+fit1 <- lm(fev ~ smoke, data = fev)
+summary(fit1)
+
+```
+
+### Perform a multiple linear regression analysis
+Regress `fev` on `age` and `smoke`: $fev \sim b_0 + b_1 age + b_2 smoke$
+
+```{r}
+
+modelResult <- lm(fev ~ age + smoke, data = fev)
 
 summary(modelResult)
 confint(modelResult)
@@ -182,37 +191,23 @@ confint(modelResult)
 ```
 
 
-Model Interpretation:
+Interpretation of results:
 
-the estimated regression line equation can be written as follow: fev = -4.448560 + 0.061364* age+ 0.104560 * height+0.161112*Sex(Male)
+- The estimated regression line equation can be written as fev = 0.367373 + 0.230605 * age -0.208995 * Smoker
 
-the beta coefficient for the variable age (b1) is 0.061364 It means with age increase in one year, the predicted fev value will increase 0.061364
-
-F-statistic gives the overall significance of the model. It assess whether at least one predictor variable has a non-zero coefficient.
-
+- How to interpret the coefficients?
 
 ### Effects of variables
 
-```{r}
+```{r, message = FALSE}
 
 library(effects)
-allEffects(modelResult)
-plot(allEffects(modelResult),axes=list(x=list(rug=FALSE)))
+plot(allEffects(modelResult))
 
 
 ```
 
 
-
-### Predict new data
-
-```{r}
-
-newData <- data.frame(age = c(Subject1=3,Subject2=4),height=c(57,67),sex=c("male","female"))
-predict(modelResult,newData)
-
-
-```
 
 
 
