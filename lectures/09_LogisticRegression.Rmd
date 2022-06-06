@@ -21,162 +21,141 @@ body{
 }
 </style>
 ```
-
-
 ## Introduction
 
--   Motivation
--   Data overview
--   Perform logistic regression analysis
--   Model evaluation
+-   Data example
+-   Simple logistic regression analysis
+-   Multiple logistic regression analysis
 
+## Data example
+We will use the same data, **fev**, used in the lecture '06_TestsOnMeans'. This data have `fev` measuring lung function in children who are smokers or non-smokers. Smoking tends to impair lung function.
 
-## Prepare data
+* Important variables we use in this lecture:
 
-**fev** data: Smoking tends to impair lung function. Data in children who smoke.
-
-**age**: subject age
-
-**smoke**: smoke smoking habits (1 = yes, 2 = no)
+    - **sex**: subject gender (1 = male, 2 = female)
+    - **smoke**: smoke smoking habits (1 = yes, 2 = no)
+    - **age**: subject age at time of measurement (years)
+    - **fev**: measured FEV (liters per second)
+    - **height**: subject height at time of measurement (inches)
 
 ```{r}
 
-dataForAnalysis=read.csv("./data/fev.csv",header=TRUE,row.names=1)
-dataForAnalysis$sex=ifelse(dataForAnalysis$sex==1,"male","female")
-dataForAnalysis$smoke=factor(ifelse(dataForAnalysis$smoke==1,"yes","no"))
+#fev=read.csv("./data/fev.csv",header=TRUE,row.names=1)
+fev <- read.csv("https://raw.githubusercontent.com/couthcommander/sip_computing/main/labs/fev.csv",header=TRUE,row.names=1)
+fev$sex=ifelse(fev$sex==1,"male","female")
+fev$smoke=factor(ifelse(fev$smoke==1,"yes","no"))
 
-head(dataForAnalysis)
+head(fev)
 
 ```
 
-
-## Simple Logistic regression
+## Simple logistic regression
 
 **Question**: Does smoking associated with age?
 
-
 ### Logistic regression assumptions
 
-The outcome is a binary or dichotomous variable like yes vs no, positive vs negative, 1 vs 0.
-There is a linear relationship between the logit of the outcome and each predictor variables. logit(p) = log(p/(1-p)), where p is the probabilities of the outcome.
-There is no extreme values or outliers in the continuous predictors
-There is no high multicollinearity among the predictors.
-
+-   The outcome is a binary or dichotomous variable: e.g., yes vs. no, positive vs. negative, 1 vs. 0.
+-   The observations are independent.
+-   There is a linear relationship between the logit of $\mbox{Pr}(Y=1 | X)$ and predictors: $\mbox{logit}\left\{\mbox{Pr}(Y=1 | X)\right\} = X \beta$.
 
 ### Data visulization
 
 ```{r}
 
-table(dataForAnalysis$smoke)
-hist(dataForAnalysis$age)
+table(fev$smoke)
+hist(fev$age, main="", xlab="Age")
 
-boxplot(dataForAnalysis$age~dataForAnalysis$smoke)
+boxplot(fev$age ~ fev$smoke, main="", xlab="Smoking status", ylab="Age")
 
 ```
-
 
 ### Perform logistic regression analysis
 
-logit(p Smoking)=log(p/(1-p))=b0+b1*Age
+$\mbox{logit}\left\{\mbox{Pr}(y=1 | X)\right\} = b_0 + b_1  age$, where $y = 1$ if smoking is "yes"; otherwise $y = 0$.
 
 ```{r}
 
-modelResult <- glm(smoke ~ age, data = dataForAnalysis,family = "binomial")
+modelResult <- glm(smoke ~ age, data = fev, family = "binomial")
 summary(modelResult)
-
 
 ```
 
+Interpretation of results:
 
-Model Interpretation:
+- The *Coefficients* are estimates of model parameters: the intercept ($b_0$) is -7.74391 and age ($b_1$) is 0.48364.
 
-the *Coefficients* estimates of the beta coefficients, Intercept (b0)=-7.74391 and age (b1)=0.48364
+- The estimated regression equation can be written as follow: $\mbox{log}\left (\frac{Pr(y=1 | X)}{1-Pr(y=1 | X)}\right) = -7.74391 + 0.48364 \; \mbox{age}$
 
-the standard errors (SE), which defines the accuracy of beta coefficients. For a given beta coefficient, the SE reflects how the coefficient varies under repeated sampling. 
-
-the z value and the associated p-value, which defines the statistical significance of the beta coefficients.
-
-the estimated regression equation can be written as follow: log(p/(1-p)) = -7.74391 + 0.48364*age
-
-Alternatively, the equation can be written as p = exp(-7.74391 + 0.48364* age)/ [1 + exp(-7.74391 + 0.48364 *age)]. 
-
-As a result, we can predict the probability of being a smoker for each age.
-
-
+- $Pr(y=1 | X)$ = $\frac{e^{(-7.74391  \: +  \: 0.48364 \: age)}}{1+e^{(-7.74391 \: +  \: 0.48364 \: age)}}$,  where $Pr(y=1 | X)$ is the probability of being a smoker at a specific age.
 
 ### Predict new data
 
 ```{r}
 
-newData <- data.frame(age = c(NewCar1=6,NewCar2=7))
-predictionResult=predict.glm(modelResult,newData,type ="response") #probabilities
+newData <- data.frame(age = c(Subject1=10,Subject2=50))
+predictionResult=predict.glm(modelResult, newData,type ="response") #probabilities
 predictionResult
 
 ```
 
-
-
 ### Odds ratio
 
-logit(p Smoking)=log(p/(1-p)) is also called as log-odd.
+- Let $p = Pr(y=1 | X)$. The $\frac{p}{1-p}$ is called odds, or odds of success, which is the ratio of "successes" to "non-successes". It reflects the likelihood that the event will occur. $\mbox{logit} \left \{ Pr(y=1 | X) \right \} = \mbox{logit}(p) = \mbox{log}\left (\frac{p}{1-p}\right)$ is called log odds.  
 
-The odds reflect the likelihood that the event will occur. It can be seen as the ratio of “successes” to “non-successes”.
+- Odds ratio (OR) is the ratio of two odds:
+$$\frac{\left (p_1/(1-p_1)\right)}{\left (p_2/(1-p_2)\right)}$$
+- It represents the ratio of the odds that an event will occur (for example, being a smoker) in one scenario (for example, age = 2), $p_1$, compared to the odds of the event occurring (being a smoker) in another scenario (for example, age = 1), $p_2$. The OR in a logistic regression measures the association between the outcome variable (being smoker) and a predictor variable (age).
 
-An odds ratio measures the association between a predictor variable (x) and the outcome variable (y). It represents the ratio of the odds that an event will occur (event = 1) given the presence of the predictor x (x = 1), compared to the odds of the event occurring in the absence of that predictor (x = 0).
+- Based on the equation from the model, log($\frac{p}{1-p}$) = -7.74391 + 0.48364 x age:
+    - We can estimate the OR being a smoker at Age1 (e.g., age = 2) compared to Age2 (e.g., age = 1):
+    
+    $e^{(-7.74391 + 0.48364*Age1)}/e^{(-7.74391 + 0.48364*Age2)}$ = $e^{(-7.74391 + 0.48364*Age1)-(7.74391 + 0.48364*Age2)}$ = $e^{0.48364*(Age1-Age2)}$
+
+    - We typically report the OR by taking exponentiation of the coefficient. $e^{0.48364}=1.62$. It indicates that with one year of age increase, the odds of being a smoker will increase by a factor of 1.62.
+
 
 ```{r}
 
-exp(modelResult$coefficients)
+#odds ratio
+exp(coefficients(modelResult))
+
+#CI for odds ratio
 exp(confint(modelResult))
 
 ```
 
-
 ## Multiple logistic regression
 
-
 **Question**: Does smoking associated with age, height, and sex?
-
 
 ### Data visulization
 
 ```{r}
 
-table(dataForAnalysis$sex,dataForAnalysis$smoke)
-plot(dataForAnalysis[,c("age","height")])
+table(fev$sex,fev$smoke)
+plot(fev[,c("age","height")], xlab="Age", ylab="Height")
 
-boxplot(dataForAnalysis$height~dataForAnalysis$smoke)
+boxplot(fev$height~fev$smoke, xlab="Smoking status", ylab="Height")
 
 
 ```
-
 
 ### Perform logistic regression analysis
 
 ```{r}
 
-modelResult <- glm(smoke ~ age+height+sex, data = dataForAnalysis,family = "binomial")
+modelResult <- glm(smoke ~ age + height + sex, data = fev, family = "binomial")
 summary(modelResult)
 
 ```
 
-
 ### Effects of variables
 
-
-```{r}
+```{r, message=FALSE}
 
 library(effects)
-allEffects(modelResult)
-plot(allEffects(modelResult),axes=list(x=list(rug=FALSE)))
+plot(allEffects(modelResult), axes=list(x=list(rug=FALSE)))
 
 
 ```
-
-
-
-
-
-
-
-
