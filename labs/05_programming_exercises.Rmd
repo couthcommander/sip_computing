@@ -56,7 +56,7 @@ Create a new subset (of the merged data) requiring the string "Mrs" in the woman
 
 From the spouse pairs:
 
-  * How many times does both the husband and wife survive?
+  * How many times do both the husband and wife survive?
   * Neither?
   * Just the wife?
   * Just the husband?

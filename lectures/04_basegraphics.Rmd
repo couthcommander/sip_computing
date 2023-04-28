@@ -113,7 +113,7 @@ data_norm <- rnorm(n, mean = 0, sd = 1)
 data_unif <- runif(n, min = 0, max = 1)
 data_pois <- rpois(n, 4)
 
-layout(matrix(1:6, 3, 2))
+layout(matrix(1:6, 3, 2, byrow = TRUE))
 hist(data_norm)
 boxplot(data_norm)
 

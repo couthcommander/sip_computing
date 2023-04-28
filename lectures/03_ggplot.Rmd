@@ -12,16 +12,18 @@ library(ggplot2)
 In ggplot, the values in a column of a data.frame will be the "ink" in the plot.
 
 Do we want to see raw data, a summary of data, or a combination of both?
- * include raw data whenever possible (i.e., not millions of points)
+
+* include raw data whenever possible (i.e., not millions of points)
 
 Who is the audience, and is the plot interpretable to them?
 
 Do we want to visualize a single variable, the relationship of two variables, or the relationship of more than two variables?
 
 X and Y-axis
- * the x-axis is horizontal (east-west)
- * the y-axis is vertical (north-south)
- * if we want to show that one variable influences the other, we typically will put the variable of influence (independent variable) on the x-axis and the variable being influenced (dependent variable) on the y-axis
+
+* the x-axis is horizontal (east-west)
+* the y-axis is vertical (north-south)
+* if we want to show that one variable influences the other, we typically will put the variable of influence (independent variable) on the x-axis and the variable being influenced (dependent variable) on the y-axis
 
 ## Components of ggplot
 
@@ -34,9 +36,8 @@ X and Y-axis
 * Faceting
 * Themes
 
-## Major functions
+## Major function
 
-* qplot - quick plot, more defaults
 * ggplot
 
 ## Common Visualizations
@@ -67,45 +68,45 @@ head(vlbw)
 For the given plots, are we showing the raw data or a summary of the data? If it's a summary, what type of summary is being shown?
 
 ```{r}
-qplot(bwt, data=vlbw, geom='density')
+ggplot(data = vlbw) + geom_density(mapping = aes(x = bwt))
 ```
 
 ```{r}
-qplot(bwt, data=vlbw, geom='histogram')
+ggplot(data = vlbw) + geom_histogram(mapping = aes(x = bwt))
 ```
 
 ```{r}
-qplot(race, data=vlbw, geom='bar')
+ggplot(data = vlbw) + geom_bar(mapping = aes(x = race))
 ```
 
 ```{r}
-qplot(gest, bwt, data=vlbw, geom='point')
+ggplot(data = vlbw) + geom_point(mapping = aes(x = gest, y = bwt))
 ```
 
 ```{r}
-qplot(sex, bwt, data=vlbw, geom='boxplot')
+ggplot(data = vlbw) + geom_boxplot(mapping = aes(x = sex, y = bwt))
 ```
 
 ```{r}
-qplot(sex, bwt, data=vlbw, geom='dotplot', binaxis = "y", binwidth = 10)
+ggplot(data = vlbw) + geom_dotplot(mapping = aes(x = sex, y = bwt), binaxis = 'y', binwidth = 10)
 ```
 
 ```{r}
-qplot(sex, bwt, data=vlbw, geom='violin')
+ggplot(data = vlbw) + geom_violin(mapping = aes(x = sex, y = bwt))
 ```
 
 We can also add lines, shapes, and text.
 
 ### Overlapping with `jitter`
 
-We can provide overlapping geometeries. Order matters.
+We can provide overlapping geometries. Order matters.
 
 ```{r}
-qplot(sex, bwt, data=vlbw, geom=c('jitter','boxplot'))
+ggplot(data = vlbw, aes(x = sex, y = bwt)) + geom_jitter() + geom_boxplot()
 ```
 
 ```{r}
-qplot(sex, bwt, data=vlbw, geom=c('boxplot','jitter'))
+ggplot(data = vlbw, aes(x = sex, y = bwt)) + geom_boxplot() + geom_jitter()
 ```
 
 ### Aesthetics
@@ -113,15 +114,15 @@ qplot(sex, bwt, data=vlbw, geom=c('boxplot','jitter'))
 We can use aesthetics to map variables to "x" and "y" as well as color, size, and shape.
 
 ```{r}
-qplot(gest, bwt, color=ivh, data=vlbw)
+ggplot(data = vlbw) + geom_point(mapping = aes(x = gest, y = bwt, color = ivh))
 ```
 
 ```{r}
-qplot(gest, bwt, color=sex, shape=sex, data=vlbw)
+ggplot(data = vlbw) + geom_point(mapping = aes(x = gest, y = bwt, color = sex, shape = sex))
 ```
 
 ```{r}
-ggplot(data=vlbw) + geom_point(mapping = aes(x=gest, y=bwt, size=lol))
+ggplot(data = vlbw) + geom_point(mapping = aes(x = gest, y = bwt, size = lol))
 ```
 
 ### Faceting
@@ -169,9 +170,9 @@ p + facet_grid(race ~ .)
 ### Theme
 
 ```{r}
-qplot(bwt, pltct, data=vlbw) + labs(title="Platelet count as function of birth weight") +
-      theme(axis.title.x = element_text(face = "bold", colour="red"),
-            axis.title.y = element_text(size = 20, angle = 0))
+ggplot(data = vlbw) + geom_point(mapping = aes(x = bwt, y = pltct)) +
+  labs(title="Platelet count as function of birth weight") +
+  theme(axis.title.x = element_text(face = "bold", colour="red"), axis.title.y = element_text(size = 20, angle = 0))
 ```
 
 ### More advanced examples

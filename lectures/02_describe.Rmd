@@ -79,7 +79,7 @@ head(bat)
 
 ## Descriptive statistics
 
-The summary of discrete data usually includes mean, standard deviation, and quantiles. It may also include number of observations and number of observations missing. Continuous data is often summarized with a frequency table.
+The summary of continuous data usually includes mean, standard deviation, and quantiles. It may also include number of observations and number of observations missing. Discrete data is often summarized with a frequency table.
 
 ## Table 1
 
@@ -201,7 +201,7 @@ html(m, round = 2, prmsd = TRUE, prn = FALSE, prN = TRUE)
 
 # Visualizing Data
 
-There are many ways we can produce a plot to visually inspect our data. Here's one example, were we take a closer look at the bicarbonate variable. We'll use the `ggplot2` package to create a density plot.
+There are many ways we can produce a plot to visually inspect our data. Here's one example, where we take a closer look at the bicarbonate variable. We'll use the `ggplot2` package to create a density plot.
 
 ```{r}
 ggplot(data = profile, aes(x = LBXSC3SI)) + geom_density()

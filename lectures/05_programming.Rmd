@@ -15,7 +15,7 @@ editor_options:
 
 ```{r}
 # `expand.grid` will build combinations for us
-x <- expand.grid(intervention = c("control", "treatment"), gender = c("M", "F"))
+x <- expand.grid(intervention = c("control", "treatment"), sex = c("M", "F"))
 x[,'los'] <- c(5,3,9,6)
 x[,'smoker'] <- c(0,1,1,0)
 x
@@ -26,15 +26,15 @@ x
 An "if" statement will run a chunk of code if a condition results in TRUE. We can test multiple statements with "and" (&&) and "or" (||). An "and" condition requires that both statements are TRUE. An "or" condition requires that at least one statement is TRUE.
 
 ```{r}
-gender <- 'M'
+sex <- 'M'
 smoker <- 1
-if(gender == 'M' && smoker == 1) {
+if(sex == 'M' && smoker == 1) {
   grp <- 'male.smoker'
-} else if(gender == 'M' && smoker != 1) {
+} else if(sex == 'M' && smoker != 1) {
   grp <- 'male.nonsmoker'
-} else if(gender == 'F' && smoker == 1) {
+} else if(sex == 'F' && smoker == 1) {
   grp <- 'female.smoker'
-} else if(gender == 'F' && smoker != 1) {
+} else if(sex == 'F' && smoker != 1) {
   grp <- 'female.nonsmoker'
 } else {
   grp <- NA
@@ -47,21 +47,21 @@ grp
 We can easily turn the above into a function.
 
 ```{r}
-classifyGenderSmoker <- function(gender, smoker) {
-  if(gender == 'M' && smoker == 1) {
+classifySexSmoker <- function(sex, smoker) {
+  if(sex == 'M' && smoker == 1) {
     grp <- 'male.smoker'
-  } else if(gender == 'M' && smoker != 1) {
+  } else if(sex == 'M' && smoker != 1) {
     grp <- 'male.nonsmoker'
-  } else if(gender == 'F' && smoker == 1) {
+  } else if(sex == 'F' && smoker == 1) {
     grp <- 'female.smoker'
-  } else if(gender == 'F' && smoker != 1) {
+  } else if(sex == 'F' && smoker != 1) {
     grp <- 'female.nonsmoker'
   } else {
     grp <- NA
   }
   grp
 }
-classifyGenderSmoker('F', 0)
+classifySexSmoker('F', 0)
 ```
 
 ## A `for` loop
@@ -72,11 +72,11 @@ n <- nrow(x)
 # initialize character vector of proper length
 grp <- character(n)
 for(i in seq(n)) {
-  # retrieve the "i"th row, and gender and smoker columns
-  gender <- x[i,'gender']
+  # retrieve the "i"th row, and sex and smoker columns
+  sex <- x[i,'sex']
   smoker <- x[i,'smoker']
   # save result as "i"th element of vector
-  grp[i] <- classifyGenderSmoker(gender, smoker)
+  grp[i] <- classifySexSmoker(sex, smoker)
 }
 grp
 ```
@@ -115,7 +115,7 @@ tapply(x[,'los'], x[,'intervention'], mean)
 ```
 
 ```{r}
-mapply(classifyGenderSmoker, x[,'gender'], x[,'smoker'])
+mapply(classifySexSmoker, x[,'sex'], x[,'smoker'])
 ```
 
 # Dates and times
@@ -163,37 +163,38 @@ difftime(now, past, units="days")
 
 ## Setting and extracting
 
-Remember this? `gender == 'M' && smoker == 1` We can apply this conditional check to our data.frame.
+Remember this? `sex == 'M' && smoker == 1` We can apply this conditional check to our data.frame.
 
 ```{r}
-x[,'gender'] == 'M' && x[,'smoker'] == '1'
-x[,'gender'] == 'M' & x[,'smoker'] == '1'
+# two ampersands (&&) create error when more than one comparison
+# x[,'sex'] == 'M' && x[,'smoker'] == 1
+x[,'sex'] == 'M' & x[,'smoker'] == 1
 ```
 
 We can extract rows based on conditions.
 
 ```{r}
-x[x[,'gender'] == 'M' & x[,'smoker'] == '1',]
+x[x[,'sex'] == 'M' & x[,'smoker'] == 1,]
 ```
 
-As an aside, sometimes we encounter missing data (NA values). Let's add a new row and see what happens when we test for "gender".
+As an aside, sometimes we encounter missing data (NA values). Let's add a new row and see what happens when we test for "sex".
 
 ```{r}
-x1 <- rbind(x, data.frame(intervention = 'control', gender = NA, los = 6, smoker = 0))
+x1 <- rbind(x, data.frame(intervention = 'control', sex = NA, los = 6, smoker = 0))
 # the new row results in NA
-x1[,'gender'] == 'M'
+x1[,'sex'] == 'M'
 # if we use this to extract, our result is incorrect
-x1[x1[,'gender'] == 'M',]
+x1[x1[,'sex'] == 'M',]
 # we need to modify our test to check for NA as well
-x1[!is.na(x1[,'gender']) & x1[,'gender'] == 'M',]
+x1[!is.na(x1[,'sex']) & x1[,'sex'] == 'M',]
 ```
 
 What if we want to count the occurrences of a condition? Instead of "extracting", we can use the `sum` function.
 
 ```{r}
-sum(!is.na(x1[,'gender']) & x1[,'gender'] == 'M')
+sum(!is.na(x1[,'sex']) & x1[,'sex'] == 'M')
 # we can ignore the check for missing by adding the "na.rm" argument
-sum(x1[,'gender'] == 'M', na.rm = TRUE)
+sum(x1[,'sex'] == 'M', na.rm = TRUE)
 ```
 
 We can also extract rows based on row number.
@@ -204,28 +205,28 @@ x[c(3,4,2,1),]
 # show row numbers based on sorted order of "los" column
 order(x[,'los'])
 # show row numbers that satisfy condition
-which(x[,'gender'] == 'F')
+which(x[,'sex'] == 'F')
 # order data by "los"
 x[order(x[,'los']),]
-# subset data by gender "F"
-x[which(x[,'gender'] == 'F'),]
+# subset data by sex "F"
+x[which(x[,'sex'] == 'F'),]
 ```
 
 We can do the same with setting/assignment.
 
 ```{r}
-x[x[,'gender'] == 'M' & x[,'smoker'] == '1','GenderSmokerGrp'] <- 'M.s'
-x[x[,'gender'] == 'M' & x[,'smoker'] != '1','GenderSmokerGrp'] <- 'M.ns'
-x[x[,'gender'] == 'F' & x[,'smoker'] == '1','GenderSmokerGrp'] <- 'F.s'
-x[x[,'gender'] == 'F' & x[,'smoker'] != '1','GenderSmokerGrp'] <- 'F.ns'
+x[x[,'sex'] == 'M' & x[,'smoker'] == 1,'SexSmokerGrp'] <- 'M.s'
+x[x[,'sex'] == 'M' & x[,'smoker'] != 1,'SexSmokerGrp'] <- 'M.ns'
+x[x[,'sex'] == 'F' & x[,'smoker'] == 1,'SexSmokerGrp'] <- 'F.s'
+x[x[,'sex'] == 'F' & x[,'smoker'] != 1,'SexSmokerGrp'] <- 'F.ns'
 x
 ```
 
-Using clever logic, we can actually set our "GenderSmokerGrp" variable with a single statement.
+Using clever logic, we can actually set our "SexSmokerGrp" variable with a single statement.
 
 ```{r}
-(x[,'gender'] == 'M') * 2 + x[,'smoker'] + 1
-x[,'GenderSmokerGrpOth'] <- factor((x[,'gender'] == 'M') * 2 + x[,'smoker'] + 1, labels = c('F.ns', 'F.s', 'M.ns', 'M.s'))
+(x[,'sex'] == 'M') * 2 + x[,'smoker'] + 1
+x[,'SexSmokerGrpOth'] <- factor((x[,'sex'] == 'M') * 2 + x[,'smoker'] + 1, labels = c('F.ns', 'F.s', 'M.ns', 'M.s'))
 x
 ```
 
@@ -249,16 +250,16 @@ If we want to find a string pattern within a vector (or column), we can use vari
 When working with character data, it may also help to transform all strings to lower/upper-case with `tolower`/`toupper`.
 
 ```{r}
-grep("ns", x[,'GenderSmokerGrp'])
-grep("ns", x[,'GenderSmokerGrp'], value = TRUE)
-grepl("ns", x[,'GenderSmokerGrp'])
+grep("ns", x[,'SexSmokerGrp'])
+grep("ns", x[,'SexSmokerGrp'], value = TRUE)
+grepl("ns", x[,'SexSmokerGrp'])
 tolower("This Is A String With Capitalization")
 ```
 
 Another common function to use with matching patterns is the `gsub` function for string substitution.
 
 ```{r}
-gsub("ns", "nons", x[,'GenderSmokerGrp'])
+gsub("ns", "nons", x[,'SexSmokerGrp'])
 ```
 
 Both `grep` and `gsub` support regular expressions (view documentation of `?regex`).
