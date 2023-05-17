@@ -1,14 +1,19 @@
 ---
 title: "Tests on proportions"
+author: Shilin Zhao and Leena Choi
 output:
-  html_document:
-    theme: cerulean
-    toc: yes
+  rmdformats::robobook:
+    highlight: kate
     toc_depth: 3
-    number_sections: false
-    toc_float: 
-       collapsed: true
-    #code_folding: hide
+    number_sections: no
+    toc_float:
+      collapsed: yes
+  pdf_document:
+    toc: yes
+    toc_depth: '3'
+editor_options:
+  markdown:
+    wrap: 72
 ---
 
 ```{=html}
@@ -21,28 +26,28 @@ body{
 }
 </style>
 ```
-
-
 ## Introduction
 
 Hypothesis tests and p-values
 
 -   Motivation
--   Compare Observed Proportion to an Expected Proportion: One-Proportion Z-Test
--   Compare Two Observed Proportions: Two Proportions Z-Test
--   Compare Multiple Observed Proportions to Expected Proportions: Chi-square test
-
+-   Compare Observed Proportion to an Expected Proportion:
+    One-Proportion Z-Test
+-   Compare Two Observed Proportions: Two-Proportion Z-Test
+-   Compare Multiple Observed Proportions to Expected Proportions:
+    Chi-squared test
 
 ## Prepare data
 
-**fev** data: Smoking tends to impair lung function. Data in children who smoke.
+**fev** data: Smoking tends to impair lung function. Data in children
+who smoke.
 
-**sex**: subject gender (1 = male, 2 = female)
-**smoke**: smoke smoking habits (1 = yes, 2 = no)
+**sex**: subject gender (1 = male, 2 = female) **smoke**: smoke smoking
+habits (1 = yes, 2 = no)
 
 ```{r}
 
-dataForAnalysis=read.csv("./data/fev.csv",header=TRUE,row.names=1)
+dataForAnalysis <- read.csv("https://raw.githubusercontent.com/couthcommander/sip_computing/main/labs/fev.csv",header=TRUE,row.names=1)
 dataForAnalysis$sex=ifelse(dataForAnalysis$sex==1,"male","female")
 dataForAnalysis$smoke=ifelse(dataForAnalysis$smoke==1,"yes","no")
 
@@ -52,7 +57,8 @@ head(dataForAnalysis)
 
 ## Compare Observed Proportion to an Expected Proportion: One-Proportion Z-Test
 
-**Question**: What is the proportion of smokers in this data? Different than 1/10?
+**Question**: What is the proportion of smokers in this data? Different
+than 1/10?
 
 ### Data summary
 
@@ -61,7 +67,6 @@ head(dataForAnalysis)
 table(dataForAnalysis$smoke)/sum(table(dataForAnalysis$smoke))
 
 ```
-
 
 ### Statistic value and CI calculation
 
@@ -81,7 +86,7 @@ ZValue
 
 ```
 
-### one propotion z test
+### One-proportion Z-test
 
 ```{r,echo=TRUE}
 
@@ -91,10 +96,10 @@ sqrt(ztest$statistic)
 
 ```
 
+## Compare Two Observed Proportions: Two-Proportions Z-Test
 
-## Compare Two Observed Proportions: Two Proportions Z-Test
-
-**Question**: What is the proportion of smokers in male and female subjects? Different?
+**Question**: What is the proportion of smokers in male and female
+subjects? Different?
 
 ### Data summary in two groups
 
@@ -127,7 +132,7 @@ ZValue
 
 ```
 
-### Two propotion z test
+### Two-proportion Z-test
 
 ```{r}
 
@@ -137,44 +142,43 @@ sqrt(ztest$statistic)
 
 ```
 
+### Same result as Chi-squared test
 
-## Compare Multiple Observed Proportions to Expected Proportions: Chi-square test
+```{r}
 
-**Question**: Are the Proportions of transplant tissue types different between male and female?
+contingencyTable=as.matrix(table(dataForAnalysis$sex,dataForAnalysis$smoke))
+chisq.test(contingencyTable,correct = FALSE)
 
+```
+
+## Compare Multiple Observed Proportions to Expected Proportions: Chi-squared test
+
+**Question**: Are the Proportions of transplant tissue types different
+between male and female?
 
 ### Prepare data
 
 **sot-covid** data
 
-**organ**: Transplant organ type (0 = healthy control, 1 = kidney, 2 =liver, 3 = heart, 4 = lung)
-**male**: smoke smoking habits (1 = male, 2 = female)
-
+**organ**: Transplant organ type (0 = healthy control, 1 = kidney, 2
+=liver, 3 = heart, 4 = lung) **male**: smoke smoking habits (1 = male, 2
+= female)
 
 ```{r}
 
 #load data
-dataForAnalysis=read.csv("./data/sot-covid.csv",header=TRUE,row.names=1)
-
+dataForAnalysis=read.csv("https://raw.githubusercontent.com/couthcommander/sip_computing/main/labs/sot-covid.csv",header=TRUE,row.names=1)
 head(dataForAnalysis)
 
 ```
 
-
-### Chi-square test
+### Chi-squared test
 
 ```{r}
 #make contingency table
 contingencyTable=as.matrix(table(dataForAnalysis$organ,dataForAnalysis$male))
+contingencyTable
 
 chisq.test(contingencyTable)
 
 ```
-
-
-
-
-
-
-
-

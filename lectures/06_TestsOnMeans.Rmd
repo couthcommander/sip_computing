@@ -1,11 +1,11 @@
 ---
 title: "Tests on mean values"
+author: Shilin Zhao and Leena Choi
 output:
   rmdformats::robobook:
     highlight: kate
     toc_depth: 3
     number_sections: no
-    author: Shilin Zhao and Leena Choi
     toc_float:
       collapsed: yes
   pdf_document:
