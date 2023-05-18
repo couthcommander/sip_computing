@@ -1,14 +1,19 @@
 ---
 title: "Linear regression"
+author: Shilin Zhao and Leena Choi
 output:
-  html_document:
-    theme: cerulean
-    toc: yes
+  rmdformats::robobook:
+    highlight: kate
     toc_depth: 3
-    number_sections: false
-    toc_float: 
-       collapsed: true
-    #code_folding: hide
+    number_sections: no
+    toc_float:
+      collapsed: yes
+  pdf_document:
+    toc: yes
+    toc_depth: '3'
+editor_options:
+  markdown:
+    wrap: 72
 ---
 
 ```{=html}
@@ -21,7 +26,6 @@ body{
 }
 </style>
 ```
-
 ## Introduction
 
 -   Motivation
@@ -29,16 +33,18 @@ body{
 -   Perform simple and multiple linear regression analysis
 -   Model diagnostics
 
-
 ## Data example
-We will use the same data, **fev**, used in the lecture '06_TestsOnMeans'. This data have `fev` measuring lung function in children who are smokers or non-smokers. Smoking tends to impair lung function.
 
-* Important variables we use in this lecture:
+We will use the same data, **fev**, used in the lecture
+'06_TestsOnMeans'. This data have `fev` measuring lung function in
+children who are smokers or non-smokers. Smoking tends to impair lung
+function.
 
-    - **sex**: subject gender (1 = male, 2 = female)
+-   Important variables we use in this lecture:
 
-    - **smoke**: smoke smoking habits (1 = yes, 2 = no)
+    -   **sex**: subject gender (1 = male, 2 = female)
 
+    -   **smoke**: smoke smoking habits (1 = yes, 2 = no)
 
 ```{r}
 
@@ -57,8 +63,8 @@ head(fev)
 
 ### Checking assumptions
 
-**Normality**: Does the dependent variable follows a normal distribution?
-
+**Normality**: Does the dependent variable follows a normal
+distribution?
 
 ```{r}
 
@@ -67,7 +73,8 @@ hist(fev$fev, main="", xlab="FEV")
 
 ```
 
-**Linearity**: Does the relationship between the independent variable and the dependent variable is linear?
+**Linearity**: Does the relationship between the independent variable
+and the dependent variable is linear?
 
 ```{r}
 
@@ -90,17 +97,28 @@ summary(modelResult)
 
 Interpretation of results:
 
-- The *Coefficients* are estimates of model parameters: the intercept ($b_0$) is 0.431648 and age ($b_1$) is 0.222041. 
+-   The *Coefficients* are estimates of model parameters: the intercept
+    ($b_0$) is 0.431648 and age ($b_1$) is 0.222041.
 
-    - The estimated regression equation can be written as fev = 0.431648 + 0.222041*age.
-    - The intercept ($b_0$) can be interpreted as the predicted fev value at age=0.
-    - The coefficient for age ($b_1$) is 0.222041; if age increases by one year, the predicted fev value increases by 0.222041.
+    -   The estimated regression equation can be written as fev =
+        0.431648 + 0.222041\*age.
+    -   The intercept ($b_0$) can be interpreted as the predicted fev
+        value at age=0.
+    -   The coefficient for age ($b_1$) is 0.222041; if age increases by
+        one year, the predicted fev value increases by 0.222041.
 
-- The standard errors (SE) is the standard deviation of sampling distribution of the coefficients. The SE reflects how the coefficient would vary under repeated sampling.
+-   The standard errors (SE) is the standard deviation of sampling
+    distribution of the coefficients. The SE reflects how the
+    coefficient would vary under repeated sampling.
 
-- The R-squared (R2) ranges from 0 to 1 and represents the proportion of variability in fev (dependent variable) explained by the model. For a simple linear regression, R2 is square of the Pearson's correlation coefficient.
+-   The R-squared (R2) ranges from 0 to 1 and represents the proportion
+    of variability in fev (dependent variable) explained by the model.
+    For a simple linear regression, R2 is square of the Pearson's
+    correlation coefficient.
 
-- The adjusted R-squared is a modified R-squared to adjust for the number of predictors in the model. It tries to correct for overestimation.
+-   The adjusted R-squared is a modified R-squared to adjust for the
+    number of predictors in the model. It tries to correct for
+    overestimation.
 
 ### Model diagnostics
 
@@ -112,7 +130,8 @@ confint(modelResult)
 
 ```
 
-If the same study were to be repeated, there is a 95% chance that the interval [0.21, 0.24] contains the true value of $b_1$.
+If the same study were to be repeated, there is a 95% chance that the
+interval [0.21, 0.24] contains the true value of $b_1$.
 
 #### Visulization of the fitted line
 
@@ -137,7 +156,6 @@ abline(0,1,lty=2,col="red")
 
 ```
 
-
 ### Predict new data
 
 ```{r}
@@ -148,17 +166,14 @@ predict(modelResult, newData)
 
 ```
 
-
 ## Multiple linear regression
 
-
-Multiple linear regression is an extension of simple linear regression used to predict an outcome based on multiple predictors.
+Multiple linear regression is an extension of simple linear regression
+used to predict an outcome based on multiple predictors.
 
 **Question**: Are age and smoking associated with fev (lung function)?
 
-
 ### Data visulization
-
 
 ```{r}
 
@@ -169,6 +184,7 @@ boxplot(fev$age~fev$smoke, main="", xlab="Smoke", ylab="Age")
 ```
 
 ### Perform a linear regression analysis
+
 Regress `fev` on `smoke`: $fev \sim b_0 + b_2 smoke$
 
 ```{r}
@@ -179,6 +195,7 @@ summary(fit1)
 ```
 
 ### Perform a multiple linear regression analysis
+
 Regress `fev` on `age` and `smoke`: $fev \sim b_0 + b_1 age + b_2 smoke$
 
 ```{r}
@@ -190,12 +207,12 @@ confint(modelResult)
 
 ```
 
-
 Interpretation of results:
 
-- The estimated regression line equation can be written as fev = 0.367373 + 0.230605 * age -0.208995 * Smoker
+-   The estimated regression line equation can be written as fev =
+    0.367373 + 0.230605 \* age -0.208995 \* Smoker
 
-- How to interpret the coefficients?
+-   How to interpret the coefficients?
 
 ### Effects of variables
 
@@ -206,8 +223,3 @@ plot(allEffects(modelResult))
 
 
 ```
-
-
-
-
-

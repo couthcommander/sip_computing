@@ -18,7 +18,6 @@ h2 {
 }
 </style>
 ```
-
 ```{r setup,echo=FALSE}
 
 knitr::opts_chunk$set(echo = FALSE,eval=FALSE)
@@ -26,70 +25,91 @@ knitr::opts_chunk$set(echo = FALSE,eval=FALSE)
 
 ```
 
-
-
 ## Exercise
 
 -   Data assumptions: show data distribution and discuss about Normality and Linearity
 -   Perform the linear regression analysis
 -   Model evaluation: discuss model result
 
-
 ## Data
 
 ```{r,echo=TRUE}
 
 #load data
-dataForAnalysis=read.csv("./data/sot-covid.csv",header=TRUE,row.names=1)
+dataForAnalysis <- read.csv("https://raw.githubusercontent.com/couthcommander/sip_computing/main/labs/sot-covid.csv",header=TRUE,row.names=1)
+
 dataForAnalysis$organ=factor(dataForAnalysis$organ)
 
 head(dataForAnalysis)
 
 ```
 
-**Question**: Is RBD at three weeks (rbd2) associated with basedline RBD (rbd1) and other factors including organ and age?
+**Question**: Is ELISA response to nucleocapsid protein at three weeks (nc2) associated with baseline (nc1) and other factors including organ and age?
 
-### Exercise 1: Data visulization for  rbd2, rbd1, age, and organ
+### Exercise 1: Data visualization
 
-```{r}
+Use some pictures (histogram, scatter plot, or box plot,...) to show the distribution of all factors (nc2, nc1, age, and organ); Think about:
 
-plot(dataForAnalysis[,c("rbd2","rbd1","age")])
+(1) Assess the data assumptions (Normality and Linearity) for linear regression;
 
-boxplot(dataForAnalysis$rbd2~dataForAnalysis$organ)
+(2) Based on (1), do you think we need to perform a log transformation on nc1 and nc2?
 
-```
-
-
-### Exercise 2: Perform the linear regression analysis, rbd2~rbd1+age+organ
+(3) What is the relationships between nc1, nc2, age, and organ;
 
 ```{r}
 
-modelResult <- lm(rbd2 ~ rbd1+age+organ, data = dataForAnalysis)
+plot(dataForAnalysis[,c("nc2","nc1","age")])
+plot(log(dataForAnalysis[,c("nc2","nc1")]))
+
+boxplot(log(dataForAnalysis$nc1)~dataForAnalysis$organ)
+boxplot(log(dataForAnalysis$nc2)~dataForAnalysis$organ)
+
+boxplot(dataForAnalysis$age~dataForAnalysis$organ)
 
 ```
 
+### Exercise 2: Perform simple linear regression analysis
 
-### Exercise 3: Model interpretation, show coefficients, confidence interval, and p values 
+Using nc2 as Y, nc1 as X
+
+```{r}
+
+modelResult <- lm(log(nc2) ~ log(nc1), data = dataForAnalysis)
+
+```
+
+### Exercise 3: Model interpretation
+
+(1) Is nc1 significantly associated with nc2? What is the coefficient of nc1? What does it mean?
+(2) Use a scatter plot to show the nc1 in X axis, and nc2 in Y axis. Add the fitted regression line.
+(3) Make residual plot to assess the Homoscedasticity assumption.
 
 ```{r}
 
 summary(modelResult)
-confint(modelResult)
+
+plot(log(nc2) ~ log(nc1), data =dataForAnalysis,main = "nc2 Regression by nc1")
+abline(modelResult,lty=2,col="red")
+
+plot(fitted(modelResult),residuals(modelResult))
 
 ```
 
+### Exercise 4: Perform multiple linear regression analysis
 
+Using nc2 as Y; nc1, age, and organ as X
 
-### Exercise 4: USe the model to predict the rbd2 value for a new subject.
+```{r}
 
-
-```{r,echo=TRUE,eval=TRUE}
-
-newData <- data.frame(age = c(Subject1=3,Subject2=4),rbd1=c(0.426,0.153),organ=c(1,2))
-
+modelResult <- lm(log(nc2) ~ log(nc1)+age+organ, data = dataForAnalysis)
 
 ```
 
+### Exercise 5: Use the model to predict the nc2 value for a new subject.
 
+```{r}
 
+newData <- data.frame(age = c(Subject1=3,Subject2=4),nc1=c(0.126,0.153),organ=factor(c(1,2)))
+predict(modelResult,newdata = newData)
 
+```
