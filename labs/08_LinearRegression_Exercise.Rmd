@@ -61,6 +61,12 @@ Use some pictures (histogram, scatter plot, or box plot,...) to show the distrib
 plot(dataForAnalysis[,c("nc2","nc1","age")])
 plot(log(dataForAnalysis[,c("nc2","nc1")]))
 
+hist(dataForAnalysis$nc1)
+hist(log(dataForAnalysis$nc1))
+
+hist(dataForAnalysis$nc2)
+hist(log(dataForAnalysis$nc2))
+
 boxplot(log(dataForAnalysis$nc1)~dataForAnalysis$organ)
 boxplot(log(dataForAnalysis$nc2)~dataForAnalysis$organ)
 
@@ -82,7 +88,7 @@ modelResult <- lm(log(nc2) ~ log(nc1), data = dataForAnalysis)
 
 (1) Is nc1 significantly associated with nc2? What is the coefficient of nc1? What does it mean?
 (2) Use a scatter plot to show the nc1 in X axis, and nc2 in Y axis. Add the fitted regression line.
-(3) Make residual plot to assess the Homoscedasticity assumption.
+(3) Make residual plot to assess the homogeneity of variances assumption.
 
 ```{r}
 
@@ -102,6 +108,7 @@ Using nc2 as Y; nc1, age, and organ as X
 ```{r}
 
 modelResult <- lm(log(nc2) ~ log(nc1)+age+organ, data = dataForAnalysis)
+summary(modelResult)
 
 ```
 

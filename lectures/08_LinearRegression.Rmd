@@ -133,7 +133,7 @@ confint(modelResult)
 If the same study were to be repeated, there is a 95% chance that the
 interval [0.21, 0.24] contains the true value of $b_1$.
 
-#### Visulization of the fitted line
+#### Visualization of the fitted line
 
 ```{r}
 
@@ -166,41 +166,83 @@ predict(modelResult, newData)
 
 ```
 
+### Visualization of confidence interval
+
+```{r}
+preds <- predict(modelResult, data = fev, interval = 'confidence')
+
+plot(fev$age,fev$fev,pch=16)
+
+#add fitted regression line
+abline(modelResult,col=2)
+#add dashed lines for confidence bands
+lines(fev$age, preds[ ,3], lty = 'dashed', col = 'blue')
+lines(fev$age, preds[ ,2], lty = 'dashed', col = 'blue')
+
+```
+
 ## Multiple linear regression
 
 Multiple linear regression is an extension of simple linear regression
 used to predict an outcome based on multiple predictors.
 
-**Question**: Are age and smoking associated with fev (lung function)?
+**Question**: Are age, gender, and smoking associated with fev (lung
+function)?
 
-### Data visulization
+### Data visualization
 
 ```{r}
 
 boxplot(fev$fev~fev$smoke, main="", xlab="Smoke", ylab="FEV")
+boxplot(fev$fev~fev$sex, main="", xlab="Smoke", ylab="FEV")
 
-boxplot(fev$age~fev$smoke, main="", xlab="Smoke", ylab="Age")
 
 ```
 
 ### Perform a linear regression analysis
 
-Regress `fev` on `smoke`: $fev \sim b_0 + b_2 smoke$
+Regress `fev` on `smoke`: $fev \sim b_0 + b_1 smoke$
 
 ```{r}
 
 fit1 <- lm(fev ~ smoke, data = fev)
 summary(fit1)
+```
+
+Regress `fev` on `sex`: $fev \sim b_0 + b_1 sex$
+
+```{r}
+fit2 <- lm(fev ~ sex, data = fev)
+summary(fit2)
+```
+
+### Visualization of age, gender, and smoking together
+
+#### Age (by smoking) vs FEV
+
+```{r}
+
+plot(fev$age, fev$fev, main = "", xlab="Age", ylab="FEV",col=factor(fev$smoke),pch=16)
+legend("topleft",legend=levels(factor(fev$smoke)),bty="n",col=1:2,pch=16)
+
+```
+
+#### Age (by gender) vs FEV
+
+```{r}
+plot(fev$age, fev$fev, main = "", xlab="Age", ylab="FEV",col=factor(fev$sex),pch=16)
+legend("topleft",legend=levels(factor(fev$sex)),bty="n",col=1:2,pch=16)
 
 ```
 
 ### Perform a multiple linear regression analysis
 
-Regress `fev` on `age` and `smoke`: $fev \sim b_0 + b_1 age + b_2 smoke$
+Regress `fev` on `age` and `smoke`:
+$fev \sim b_0 + b_1 age + b_2 smoke + b_3 sex$
 
 ```{r}
 
-modelResult <- lm(fev ~ age + smoke, data = fev)
+modelResult <- lm(fev ~ age + smoke+sex, data = fev)
 
 summary(modelResult)
 confint(modelResult)
@@ -210,9 +252,29 @@ confint(modelResult)
 Interpretation of results:
 
 -   The estimated regression line equation can be written as fev =
-    0.367373 + 0.230605 \* age -0.208995 \* Smoker
+    0.24 + 0.23 \* age -0.15 \* Smoker -0.31 \* Male
 
 -   How to interpret the coefficients?
+
+```{r}
+
+plot(fev$age, fev$fev, main = "", xlab="Age", ylab="FEV",col=factor(fev$smoke),pch=16)
+legend("topleft",legend=levels(factor(fev$smoke)),bty="n",col=1:2,pch=16)
+abline(modelResult$coefficients["(Intercept)"],modelResult$coefficients["age"],lwd=2)
+abline(modelResult$coefficients["(Intercept)"]+modelResult$coefficients["smokeyes"],modelResult$coefficients["age"],col=2,lwd=2)
+legend("topleft",legend=levels(factor(fev$smoke)),bty="n",col=1:2,pch=16)
+
+```
+
+```{r}
+
+plot(fev$age, fev$fev, main = "", xlab="Age", ylab="FEV",col=factor(fev$sex),pch=16)
+legend("topleft",legend=levels(factor(fev$sex)),bty="n",col=1:2,pch=16)
+abline(modelResult$coefficients["(Intercept)"],modelResult$coefficients["age"],lwd=2)
+abline(modelResult$coefficients["(Intercept)"]+modelResult$coefficients["sexmale"],modelResult$coefficients["age"],col=2,lwd=2)
+legend("topleft",legend=levels(factor(fev$sex)),bty="n",col=1:2,pch=16)
+
+```
 
 ### Effects of variables
 
