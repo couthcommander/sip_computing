@@ -1,14 +1,19 @@
 ---
 title: "Logistic Regression"
+author: Shilin Zhao and Leena Choi
 output:
-  html_document:
-    theme: cerulean
-    toc: yes
+  rmdformats::robobook:
+    highlight: kate
     toc_depth: 3
-    number_sections: false
-    toc_float: 
-       collapsed: true
-    #code_folding: hide
+    number_sections: no
+    toc_float:
+      collapsed: yes
+  pdf_document:
+    toc: yes
+    toc_depth: '3'
+editor_options:
+  markdown:
+    wrap: 72
 ---
 
 ```{=html}
@@ -28,15 +33,19 @@ body{
 -   Multiple logistic regression analysis
 
 ## Data example
-We will use the same data, **fev**, used in the lecture '06_TestsOnMeans'. This data have `fev` measuring lung function in children who are smokers or non-smokers. Smoking tends to impair lung function.
 
-* Important variables we use in this lecture:
+We will use the same data, **fev**, used in the lecture
+'06_TestsOnMeans'. This data have `fev` measuring lung function in
+children who are smokers or non-smokers. Smoking tends to impair lung
+function.
 
-    - **sex**: subject gender (1 = male, 2 = female)
-    - **smoke**: smoke smoking habits (1 = yes, 2 = no)
-    - **age**: subject age at time of measurement (years)
-    - **fev**: measured FEV (liters per second)
-    - **height**: subject height at time of measurement (inches)
+-   Important variables we will use in this lecture:
+
+    -   **sex**: subject gender (1 = male, 2 = female)
+    -   **smoke**: smoke smoking habits (1 = yes, 2 = no)
+    -   **age**: subject age at time of measurement (years)
+    -   **fev**: measured FEV (liters per second)
+    -   **height**: subject height at time of measurement (inches)
 
 ```{r}
 
@@ -55,11 +64,14 @@ head(fev)
 
 ### Logistic regression assumptions
 
--   The outcome is a binary or dichotomous variable: e.g., yes vs. no, positive vs. negative, 1 vs. 0.
+-   The outcome is a binary or dichotomous variable: e.g., yes vs. no,
+    positive vs. negative, 1 vs. 0.
 -   The observations are independent.
--   There is a linear relationship between the logit of $\mbox{Pr}(Y=1 | X)$ and predictors: $\mbox{logit}\left\{\mbox{Pr}(Y=1 | X)\right\} = X \beta$.
+-   There is a linear relationship between the logit of
+    $\mbox{Pr}(Y=1 | X)$ and predictors:
+    $\mbox{logit}\left\{\mbox{Pr}(Y=1 | X)\right\} = X \beta$.
 
-### Data visulization
+### Data visualization
 
 ```{r}
 
@@ -72,7 +84,14 @@ boxplot(fev$age ~ fev$smoke, main="", xlab="Smoking status", ylab="Age")
 
 ### Perform logistic regression analysis
 
-$\mbox{logit}\left\{\mbox{Pr}(y=1 | X)\right\} = b_0 + b_1  age$, where $y = 1$ if smoking is "yes"; otherwise $y = 0$.
+"smoke" is a factor with "no" as reference level.
+
+```{r}
+levels(fev$smoke)
+```
+
+$\mbox{logit}\left\{\mbox{Pr}(y=1 | X)\right\} = b_0 + b_1  age$, where
+$y = 1$ if smoke is "yes"; otherwise $y = 0$.
 
 ```{r}
 
@@ -83,11 +102,16 @@ summary(modelResult)
 
 Interpretation of results:
 
-- The *Coefficients* are estimates of model parameters: the intercept ($b_0$) is -7.74391 and age ($b_1$) is 0.48364.
+-   The *Coefficients* are estimates of model parameters: the intercept
+    ($b_0$) is -7.74391 and age ($b_1$) is 0.48364.
 
-- The estimated regression equation can be written as follow: $\mbox{log}\left (\frac{Pr(y=1 | X)}{1-Pr(y=1 | X)}\right) = -7.74391 + 0.48364 \; \mbox{age}$
+-   The estimated regression equation can be written as follow:
+    $\mbox{log}\left (\frac{Pr(y=1 | X)}{1-Pr(y=1 | X)}\right) = -7.74391 + 0.48364 \; \mbox{age}$
 
-- $Pr(y=1 | X)$ = $\frac{e^{(-7.74391  \: +  \: 0.48364 \: age)}}{1+e^{(-7.74391 \: +  \: 0.48364 \: age)}}$,  where $Pr(y=1 | X)$ is the probability of being a smoker at a specific age.
+-   $Pr(y=1 | X)$ =
+    $\frac{e^{(-7.74391  \: +  \: 0.48364 \: age)}}{1+e^{(-7.74391 \: +  \: 0.48364 \: age)}}$,
+    where $Pr(y=1 | X)$ is the probability of being a smoker at a
+    specific age.
 
 ### Predict new data
 
@@ -101,19 +125,36 @@ predictionResult
 
 ### Odds ratio
 
-- Let $p = Pr(y=1 | X)$. The $\frac{p}{1-p}$ is called odds, or odds of success, which is the ratio of "successes" to "non-successes". It reflects the likelihood that the event will occur. $\mbox{logit} \left \{ Pr(y=1 | X) \right \} = \mbox{logit}(p) = \mbox{log}\left (\frac{p}{1-p}\right)$ is called log odds.  
+-   Let $p = Pr(y=1 | X)$. The $\frac{p}{1-p}$ is called odds, or odds
+    of success, which is the ratio of "successes" to "non-successes". It
+    reflects the likelihood that the event will occur.
+    $\mbox{logit} \left \{ Pr(y=1 | X) \right \} = \mbox{logit}(p) = \mbox{log}\left (\frac{p}{1-p}\right)$
+    is called log odds.
 
-- Odds ratio (OR) is the ratio of two odds:
-$$\frac{\left (p_1/(1-p_1)\right)}{\left (p_2/(1-p_2)\right)}$$
-- It represents the ratio of the odds that an event will occur (for example, being a smoker) in one scenario (for example, age = 2), $p_1$, compared to the odds of the event occurring (being a smoker) in another scenario (for example, age = 1), $p_2$. The OR in a logistic regression measures the association between the outcome variable (being smoker) and a predictor variable (age).
+-   Odds ratio (OR) is the ratio of two odds:
+    $$\frac{\left (p_1/(1-p_1)\right)}{\left (p_2/(1-p_2)\right)}$$
 
-- Based on the equation from the model, log($\frac{p}{1-p}$) = -7.74391 + 0.48364 x age:
-    - We can estimate the OR being a smoker at Age1 (e.g., age = 2) compared to Age2 (e.g., age = 1):
-    
-    $e^{(-7.74391 + 0.48364*Age1)}/e^{(-7.74391 + 0.48364*Age2)}$ = $e^{(-7.74391 + 0.48364*Age1)-(7.74391 + 0.48364*Age2)}$ = $e^{0.48364*(Age1-Age2)}$
+-   It represents the ratio of the odds that an event will occur (for
+    example, being a smoker) in one scenario (for example, age = 2),
+    $p_1$, compared to the odds of the event occurring (being a smoker)
+    in another scenario (for example, age = 1), $p_2$. The OR in a
+    logistic regression measures the association between the outcome
+    variable (being smoker) and a predictor variable (age).
 
-    - We typically report the OR by taking exponentiation of the coefficient. $e^{0.48364}=1.62$. It indicates that with one year of age increase, the odds of being a smoker will increase by a factor of 1.62.
+-   Based on the equation from the model, log($\frac{p}{1-p}$) =
+    -7.74391 + 0.48364 x age:
 
+    -   We can estimate the OR being a smoker at Age1 (e.g., age = 2)
+        compared to Age2 (e.g., age = 1):
+
+    $e^{(-7.74391 + 0.48364*Age1)}/e^{(-7.74391 + 0.48364*Age2)}$ =
+    $e^{(-7.74391 + 0.48364*Age1)-(7.74391 + 0.48364*Age2)}$ =
+    $e^{0.48364*(Age1-Age2)}$
+
+    -   We typically report the OR by taking exponentiation of the
+        coefficient. $e^{0.48364}=1.62$. It indicates that with one year
+        of age increase, the odds of being a smoker will increase by a
+        factor of 1.62.
 
 ```{r}
 
@@ -129,7 +170,7 @@ exp(confint(modelResult))
 
 **Question**: Does smoking associated with age, height, and sex?
 
-### Data visulization
+### Data visualization
 
 ```{r}
 
