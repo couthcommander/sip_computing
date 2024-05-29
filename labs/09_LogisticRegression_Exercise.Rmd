@@ -34,7 +34,7 @@ knitr::opts_chunk$set(echo = FALSE,eval=FALSE)
 -   Perform logistic regression analysis
 -   Model evaluation
 
-Goal: association between survival (survived==1) and other factors?
+Goal: Logistic Regression for survival (survived==1) with other factors
 
 ```{r,message=FALSE,echo=TRUE}
 
