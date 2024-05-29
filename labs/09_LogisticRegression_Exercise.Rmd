@@ -21,9 +21,6 @@ body{
 }
 </style>
 ```
-
-
-
 ```{r setup,echo=FALSE}
 
 knitr::opts_chunk$set(echo = FALSE,eval=FALSE)
@@ -31,17 +28,13 @@ knitr::opts_chunk$set(echo = FALSE,eval=FALSE)
 
 ```
 
-
-
 ## Exercise
 
 -   Data overview
 -   Perform logistic regression analysis
 -   Model evaluation
 
-
-Goal: association between survival (survived==1) and age (age).
-
+Goal: association between survival (survived==1) and other factors?
 
 ```{r,message=FALSE,echo=TRUE}
 
@@ -56,8 +49,7 @@ dataForAnalysis=titanic3
 
 **Question**: Is survival (survived==1) associated with age, sex and ticket fare (fare)?
 
-### Exercise 1: Data visulization for survival, age, sex and fare
-
+### Exercise 1: Data visualization for survival, age, sex and fare
 
 ```{r}
 
@@ -72,10 +64,9 @@ boxplot(dataForAnalysis$fare~dataForAnalysis$survived)
 
 ```
 
-
 ### Exercise 2: Perform logistic regression analysis
 
-survived ~ age+fare+sex
+survived \~ age+fare+sex
 
 ```{r}
 
@@ -85,7 +76,7 @@ summary(modelResult)
 
 ```
 
-### Exercise 3: Model interpretation, show coefficients, confidence interval, and p values 
+### Exercise 3: Model interpretation, show coefficients, confidence interval, and p values
 
 ```{r}
 
@@ -94,9 +85,7 @@ confint(modelResult)
 
 ```
 
-
 ### Exercise 4: Report Odds ratio for each variable
-
 
 ```{r}
 
@@ -116,10 +105,3 @@ plot(allEffects(modelResult))
 
 
 ```
-
-
-
-
-
-
-

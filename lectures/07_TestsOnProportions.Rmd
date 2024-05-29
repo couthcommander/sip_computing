@@ -105,9 +105,9 @@ subjects? Different?
 
 ```{r}
 
-table(dataForAnalysis$smoke,dataForAnalysis$sex)
+t(table(dataForAnalysis$smoke,dataForAnalysis$sex))
 
-table(dataForAnalysis$smoke,dataForAnalysis$sex)/as.vector(table(dataForAnalysis$sex))
+t(table(dataForAnalysis$smoke,dataForAnalysis$sex))/(as.vector(table(dataForAnalysis$sex)))
 
 
 ```
