@@ -4,6 +4,7 @@ author: Shilin Zhao and Leena Choi
 output:
   rmdformats::robobook:
     highlight: kate
+    code_folding: hide
     toc_depth: 3
     number_sections: no
     toc_float:

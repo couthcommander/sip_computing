@@ -91,15 +91,15 @@ For the next few examples, we'll download SAS data sets from the CDC's NHANES pr
 
 SAS is a proprietary (not open source nor free) alternative to R.
 
-Here's a link to the description of the profile data: [biopro](https://wwwn.cdc.gov/Nchs/Nhanes/2017-2018/P_BIOPRO.htm)
+Here's a link to the description of the profile data: [biopro](https://wwwn.cdc.gov/Nchs/Data/Nhanes/Public/2017/DataFiles/P_BIOPRO.htm)
 
 ```{r}
 # use `haven` package and `read_xpt` function to read SAS file
 # restrict to three columns: userid (SEQN), gender (RIAGENDR), age (RIDAGEYR)
 # use `as.data.frame` to convert from `tibble` to `data.frame`
-demo <- as.data.frame(haven::read_xpt('https://wwwn.cdc.gov/Nchs/Nhanes/2017-2018/P_DEMO.XPT'))[, c('SEQN','RIAGENDR','RIDAGEYR')]
+demo <- as.data.frame(haven::read_xpt('https://wwwn.cdc.gov/Nchs/Data/Nhanes/Public/2017/DataFiles/P_DEMO.xpt'))[, c('SEQN','RIAGENDR','RIDAGEYR')]
 # read profile data
-dat <- as.data.frame(haven::read_xpt('https://wwwn.cdc.gov/Nchs/Nhanes/2017-2018/P_BIOPRO.XPT'))
+dat <- as.data.frame(haven::read_xpt('https://wwwn.cdc.gov/Nchs/Data/Nhanes/Public/2017/DataFiles/P_BIOPRO.xpt'))
 # merge two data sets by common userid column (SEQN)
 profile <- merge(demo, dat)
 ```
