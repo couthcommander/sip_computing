@@ -29,9 +29,122 @@ body{
 ## Introduction
 
 -   Motivation
+
+    -   Why we need linear regression?
+
 -   Model assumptions
+
+    -   **Linearity**
+    -   **Independence**
+    -   **Homoscedasticity**
+    -   **Normality of residuals**
+
 -   Perform simple and multiple linear regression analysis
+
 -   Model diagnostics
+
+## Motivation
+
+These are **not just questions about correlation** — we want to
+**model**, **predict**, and **understand** relationships between
+variables.
+
+Linear regression allows us to:
+
+-    Quantify the **effect** of one variable (e.g., age) on another
+    (e.g., blood pressure)
+
+-   Make **predictions** for new individuals
+
+-   Control for other variables (e.g., age *and* sex *and* BMI)
+
+-   Evaluate **statistical significance** (is the effect real or due to
+    chance?)
+
+## Model assumptions
+
+To make valid inferences from a linear regression (e.g., p-values,
+confidence intervals), certain **assumptions must be met**. Let’s go
+over each.
+
+-   **Linearity**:
+
+    The relationship between the independent variable(s) and the
+    dependent variable is **linear**.
+
+    **Check with a scatterplot**: If the pattern is curved or non-linear
+    → linear regression isn't appropriate without transformation.
+
+-   **Independence**: Each observation must be statistically independent
+    of the others.
+
+    No repeated measurements on the same subject (unless modeled
+    correctly)
+
+    No clusters or related subjects (e.g., twins, families) unless
+    accounted for
+
+-   **Homoscedasticity**: The variance of residuals (errors) should be
+    the same across all levels of X.
+
+    Plot residuals vs. fitted values.
+
+-   **Normality of residuals:** The residuals (errors) should be
+    approximately normally distributed.
+
+    Plot a histogram or Q–Q plot of residuals
+
+```{r,echo=FALSE}
+
+set.seed(42)
+x <- seq(0, 10, length.out = 100)
+
+# 1. Linearity - good
+y_linear <- 2 * x + rnorm(100, mean = 0, sd = 2)
+
+# 2. Nonlinear pattern
+y_nonlinear <- 2 * x + 5 * sin(x) + rnorm(100, mean = 0, sd = 2)
+
+# 3. Homoscedasticity
+y_homo <- 3 * x + rnorm(100, 0, 2)
+
+# 4. Heteroscedasticity
+y_hetero <- 3 * x + rnorm(100, 0, x)
+
+# 5. Normal residuals
+resid_normal <- rnorm(100)
+
+# 6. Skewed residuals
+resid_skewed <- rexp(100) - 1
+
+par(mfrow = c(3, 2), mar = c(4, 4, 2, 1))
+
+# 1. Good Linearity
+plot(x, y_linear, main = "1. Good Linearity", pch = 19, col = "darkblue")
+abline(lm(y_linear ~ x), col = "red")
+
+# 2. Nonlinear Pattern
+plot(x, y_nonlinear, main = "2. Nonlinear Pattern", pch = 19, col = "darkgreen")
+
+# 3. Homoscedasticity
+plot(x, residuals(lm(y_homo ~ x)), main = "3. Homoscedastic Residuals",
+     pch = 19, col = "purple", ylab = "Residuals")
+abline(h = 0, lty = 2, col = "red")
+
+# 4. Heteroscedasticity
+plot(x, residuals(lm(y_hetero ~ x)), main = "4. Heteroscedastic Residuals",
+     pch = 19, col = "brown", ylab = "Residuals")
+abline(h = 0, lty = 2, col = "red")
+
+# 5. Normal Residuals
+hist(resid_normal, breaks = 15, col = "lightblue", main = "5. Normal Residuals", xlab = "Residuals")
+rug(resid_normal)
+
+# 6. Skewed Residuals
+hist(resid_skewed, breaks = 15, col = "lightpink", main = "6. Skewed Residuals", xlab = "Residuals")
+rug(resid_skewed)
+
+```
 
 ## Data example
 
@@ -284,4 +397,62 @@ library(effects)
 plot(allEffects(modelResult))
 
 
+```
+
+### Multicollinearity?
+
+Multicollinearity occurs when two or more predictor variables (X's) in a
+regression model are highly correlated with each other. In other words,
+One predictor can be linearly predicted from another, which means They
+carry redundant information.
+
+**Multicollinearity** **messes up interpretation and inference**.
+
+-   Unstable coefficient estimates**:** Small changes in data → big
+    changes in β^\hat{\beta}β\^​
+
+```{=html}
+<!-- -->
+```
+-   Inflated standard errors: Confidence intervals get wide; p-values
+    become non-significant even when variables are important
+
+-   Difficult to interpret effect sizes: You can’t separate the
+    individual contribution of correlated variable
+
+```{r}
+# Simulate data
+set.seed(123)
+n <- 100
+
+# Create a base variable (e.g., "lifestyle")
+lifestyle <- rnorm(n, mean = 50, sd = 10)
+
+# Create highly correlated variables
+drinking <- lifestyle + rnorm(n, 0, 2)     # highly correlated with lifestyle
+smoking  <- lifestyle + rnorm(n, 0, 2)     # also highly correlated
+
+# Outcome depends on both
+disease_risk <- 0.3 * drinking + 0.3 * smoking + rnorm(n, 0, 5)
+
+# Fit multiple linear regression
+model <- lm(disease_risk ~ drinking + smoking)
+
+# View model summary
+summary(model)
+```
+
+```{r}
+cor(drinking, smoking)  # should be ~0.95 or higher
+plot(drinking, smoking, main = "Drinking vs Smoking")
+```
+
+```{r}
+# Model with only drinking
+model_drink <- lm(disease_risk ~ drinking)
+summary(model_drink)
+
+# Model with only smoking
+model_smoke <- lm(disease_risk ~ smoking)
+summary(model_smoke)
 ```
