@@ -1,0 +1,98 @@
+---
+title: "Linear regression"
+output:
+  html_document:
+    theme: cerulean
+    toc: yes
+    toc_depth: 3
+    number_sections: false
+    toc_float: 
+       collapsed: true
+    #code_folding: hide
+---
+
+```{=html}
+<style>
+h2 {
+  background-color: #D4DAEC;
+}
+</style>
+```
+```{r setup,echo=FALSE}
+
+knitr::opts_chunk$set(echo = FALSE,eval=FALSE)
+
+
+```
+
+## Exercise
+
+-   Data assumptions: show data distribution and discuss about Normality and Linearity
+-   Perform the linear regression analysis
+-   Model evaluation: discuss model result
+
+## Data
+
+```{r,echo=TRUE}
+
+#load data
+dataForAnalysis <- read.csv("https://raw.githubusercontent.com/couthcommander/sip_computing/main/labs/sot-covid.csv",header=TRUE,row.names=1)
+
+dataForAnalysis$organ=factor(dataForAnalysis$organ)
+
+head(dataForAnalysis)
+
+```
+
+**Question**: Is ELISA response to nucleocapsid protein at three weeks (nc2) associated with baseline (nc1) and other factors including organ and age?
+
+### Exercise 1: Data visualization
+
+Use some pictures (histogram, scatter plot, or box plot,...) to show the distribution of all factors (nc2, nc1, age, and organ); Think about:
+
+(1) Assess the data assumptions (Normality and Linearity) for linear regression;
+
+(2) Based on (1), do you think we need to perform a log transformation on nc1 and nc2?
+
+(3) What is the relationships between nc1, nc2, age, and organ;
+
+```{r}
+
+
+```
+
+### Exercise 2: Perform simple linear regression analysis
+
+Using nc2 as Y, nc1 as X
+
+```{r}
+
+
+```
+
+### Exercise 3: Model interpretation
+
+(1) Is nc1 significantly associated with nc2? What is the coefficient of nc1? What does it mean?
+(2) Use a scatter plot to show the nc1 in X axis, and nc2 in Y axis. Add the fitted regression line.
+(3) Make residual plot to assess the Homoscedasticity assumption.
+
+```{r}
+
+
+```
+
+### Exercise 4: Perform multiple linear regression analysis
+
+Using nc2 as Y; nc1, age, and organ as X
+
+```{r}
+
+
+```
+
+### Exercise 5: Use the model to predict the nc2 value for a new subject.
+
+```{r}
+
+
+```
